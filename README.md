@@ -59,7 +59,7 @@ if (ret != 0)
 std::string ip("81.71.72.73");
 int port = 6379;
 
-RClient* client = new RClient(ip, port);
+auto client = std::make_shared<RClient>(ip, port);
 int ret = client->connect("123456");
 if (ret != 0)
 {
@@ -115,7 +115,7 @@ Right now, only few op is supported
 std::string ip("81.71.72.73");
 int port = 6379;
 
-RClient* client = new RClient(ip, port);
+auto client = std::make_shared<RClient>(ip, port);
 int ret = client->connect("123456");
 if (ret != 0)
 {
