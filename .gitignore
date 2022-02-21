@@ -1,0 +1,11 @@
+.svn/
+.git/
+.vs/
+.vscode
+x64/
+*.obj
+empty.h
+build
+Debug
+bin
+log/
