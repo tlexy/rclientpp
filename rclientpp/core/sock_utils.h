@@ -25,7 +25,7 @@ namespace sockets
 	void err_exit(const char *s);
 	int Connect(int fd, const struct sockaddr *sa, socklen_t salen);
 	int Socket(int family, int type, int protocol);
-	int Read(int fd, void *ptr, size_t nbytes);
+	std::size_t Read(int fd, void *ptr, size_t nbytes);
 	int Write(int fd, const void *ptr, size_t nbytes);
 	void Close(int fd);
 

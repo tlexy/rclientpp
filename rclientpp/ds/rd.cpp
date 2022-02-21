@@ -4,18 +4,18 @@
 NS_1
 
 Rd::Rd(std::shared_ptr<RClient> connection)
-	:_client(connection),
+	:_client(std::move(connection)),
 	_crlf("\r\n")
 {}
 
-void Rd::set_connection(std::shared_ptr<RClient> connection)
+void Rd::set_connection(const std::shared_ptr<RClient>& connection)
 {
 	_client = connection;
 }
 
-std::shared_ptr<BaseValue> Rd::redis_command(const char* cmd, int len, int& ret_code)
+std::shared_ptr<BaseValue> Rd::redis_command(const char* cmd, const std::size_t len, size_t& ret_code) const
 {
-	int ret = _client->command(cmd, len);
+	const auto ret = _client->command(cmd, len);
 	if (ret != len)
 	{
 		return nullptr;
@@ -24,10 +24,10 @@ std::shared_ptr<BaseValue> Rd::redis_command(const char* cmd, int len, int& ret_
 	return ptr;
 }
 
-bool Rd::get_boolean(const std::string& cmd)
+bool Rd::get_boolean(const std::string& cmd) const
 {
-	int ret_code = 0;
-	auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
+	size_t ret_code = 0;
+	const auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
 	if (!ptr || ret_code != 0)
 	{
 		//something error...
@@ -35,12 +35,12 @@ bool Rd::get_boolean(const std::string& cmd)
 	}
 	if (ptr->is_boolean())
 	{
-		auto pptr = std::dynamic_pointer_cast<RedisValue>(ptr);
+		const auto pptr = std::dynamic_pointer_cast<RedisValue>(ptr);
 		return pptr->u.boolean_val_;
 	}
-	else if (ptr->value_type() == ParserType::Number)
+	if (ptr->value_type() == ParserType::Number)
 	{
-		auto pptr = std::dynamic_pointer_cast<RedisValue>(ptr);
+		const auto pptr = std::dynamic_pointer_cast<RedisValue>(ptr);
 		return pptr->u.int_val_ == 1;
 	}
 	//other error

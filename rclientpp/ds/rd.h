@@ -13,14 +13,14 @@ class RClient;
 class Rd
 {
 public:
-	Rd(std::shared_ptr<RClient> connection);
+    explicit Rd(std::shared_ptr<RClient> connection);
 
-	void set_connection(std::shared_ptr<RClient> connection);
+	void set_connection(const std::shared_ptr<RClient>& connection);
 
 	//send command and wait the result.
-	std::shared_ptr<BaseValue> redis_command(const char* cmd, int len, int& ret_code);
+	std::shared_ptr<BaseValue> redis_command(const char* cmd, std::size_t len, size_t& ret_code) const;
 
-	bool get_boolean(const std::string& cmd);
+	bool get_boolean(const std::string& cmd) const;
 	//int get_integer(const std::string& cmd);
 
 protected:

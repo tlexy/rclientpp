@@ -3,13 +3,13 @@
 
 namespace rcpp {
 
-	PtrBuffer::PtrBuffer(const char* ptr, size_t len)
-		:_buf((char*)ptr),
+	PtrBuffer::PtrBuffer(const char* ptr, const size_t len)
+		:_buf(const_cast<char*>(ptr)),
 		_len(len)
 	{}
 
 	PtrBuffer::PtrBuffer()
-		: _buf(NULL),
+		: _buf(nullptr),
 		_len(0)
 	{}
 
@@ -19,7 +19,7 @@ namespace rcpp {
 		{
 			free(_buf);
 		}
-		_buf = NULL;
+		_buf = nullptr;
 	}
 
 }

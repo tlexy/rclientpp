@@ -4,14 +4,13 @@ Supported platform: Windows and Linux
 What is rclientpp?
 --------------
 
-rclientpp is C++ client for redis. It didn't rely on any other c or c++ redis client.
+rclientpp is a C++ client for redis. It doesn't rely on any other c or c++ redis client.
 
 Specifications
 
 * Easy to use.
 * C++ 11 require only.
 * Use select() to support connect/read/write timeout interface. Both windows and linux
-* Unix system maybe unsupported, because of the author never been use the any of unix system.
 * RESP 2 and RESP 3.
 * Attribute type is not supported now.
 
@@ -19,7 +18,9 @@ Building rclientpp
 --------------
 
 ### Windows
-Just use visual studio to open the rclientpp.sln, and then to compile the projects. visual stdio 2019 community is recommended.
+Use CMake with Visual Studio (2019 or higher is recommended)
+Two files will be generated, librclientpp and rclienpp-maind.
+rclienpp-maind will be located in the bin directory and the librclientpp will located in libs directory.
 
 ### Linux
 Use CMake. follow the steps:
@@ -109,7 +110,7 @@ enum class ParserType
 * RedisValue and RedisComplexValue have common super class: BaseValue
 
 ### Use redis structures
-Right now, only few op is supported
+Right now, only a few ops are supported
 
 ```
 std::string ip("81.71.72.73");
@@ -155,5 +156,3 @@ bool flag = set_client->is_member("test_set", 2);
 std::cout << "flag:" << flag << std::endl;
 
 ```
-
-

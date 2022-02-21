@@ -8,10 +8,10 @@ MapParser::MapParser()
 	:BaseParser(ParserType::Map)
 {}
 
-int MapParser::parse(std::shared_ptr<RClientBuffer> raw_resp, std::shared_ptr<BaseValue>& result)
+int MapParser::parse(const std::shared_ptr<RClientBuffer> raw_resp, std::shared_ptr<BaseValue>& result)
 {
 	//size_t old_pos = raw_resp->get_read_off();
-	int len = get_aggregate_len(raw_resp);
+	const int len = get_aggregate_len(raw_resp);
 	if (len < 0)
 	{
 		//raw_resp->set_read_off(old_pos);
@@ -19,7 +19,7 @@ int MapParser::parse(std::shared_ptr<RClientBuffer> raw_resp, std::shared_ptr<Ba
 	}
 	//auto result = std::make_shared<RedisComplexValue>(ParserType::Map);
 	auto complex_result = std::dynamic_pointer_cast<RedisComplexValue>(result);
-	int ret = parse_array(raw_resp, len*2, complex_result);
+	const int ret = parse_array(raw_resp, len*2, complex_result);
 	if (ret < 0)
 	{
 		//raw_resp->set_read_off(old_pos);

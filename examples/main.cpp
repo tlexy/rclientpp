@@ -19,11 +19,11 @@ using namespace rcpp;
 
 void test_connect()
 {
-	std::string ip("81.71.77.77");
-	int port = 6379;
+    const std::string ip("81.71.77.77");
+	constexpr int port = 6379;
 
-	RClient* client = new RClient(ip, port);
-	int ret = client->connect("123456");
+    auto* client = new RClient(ip, port);
+    const int ret = client->connect("123456");
 	if (ret != 0)
 	{
 		std::cout << "Err: " << client->strerror() << std::endl;
@@ -36,20 +36,20 @@ void test_string()
 	int port = 6379;
 
 	auto client = std::make_shared<RClient>(ip, port);
-	int ret = client->connect("123456");
+	const int ret = client->connect("123456");
 	if (ret != 0)
 	{
 		std::cout << "Err: " << client->strerror() << std::endl;
 		return;
 	}
 
-	ret = client->use_resp3();
-	if (ret != 0)
+	auto ret2 = client->use_resp3();
+	if (ret2 != 0)
 	{
 		return;
 	}
 
-	auto dss = std::make_shared<RdString>(client);
+    const auto dss = std::make_shared<RdString>(client);
 	/*dss->get("test2");
 	dss->set("test1", "abc");
 	dss->get("test1");
@@ -57,8 +57,7 @@ void test_string()
 	dss->get("test5");
 	dss->get("test6");*/
 
-	auto ptr = dss->redis_command("hgetall aaa\r\n", strlen("hgetall aaa\r\n"), ret);
-	int a = 1;
+	auto ptr = dss->redis_command("hgetall aaa\r\n", strlen("hgetall aaa\r\n"), ret2);
 }
 
 void test_hash()
@@ -74,12 +73,12 @@ void test_hash()
 		return;
 	}
 
-	ret = client->use_resp3();
-	if (ret != 0)
+	const auto ret2 = client->use_resp3();
+	if (ret2 != 0)
 	{
 		return;
 	}
-	auto dss = std::make_shared<RdHash>(client);
+    const auto dss = std::make_shared<RdHash>(client);
 	dss->hset("bbb", "name", "lin");
 	dss->hmget("bbb", {"name1", "name2", "3"});
 }
@@ -89,10 +88,10 @@ void test_sentinel()
 	SentinelOptions options;
 	options.nodes = { {"81.71.77.77", 26379}, {"81.71.77.78", 26379},{"81.71.77.79", 26379} };
 
-	Sentinel* sent = new Sentinel(options);
-	int count = sent->check();
-	auto nodes = sent->get_masters();
-	if (nodes.size() > 0)
+    const auto sent = new Sentinel(options);
+	auto count = sent->check();
+    const auto nodes = sent->get_masters();
+	if (!nodes.empty())
 	{
 		auto slaves = sent->get_slaves(nodes[0].name);
 		auto master = sent->get_master_by_name(nodes[0].name);
@@ -114,15 +113,15 @@ void test_set()
 		return;
 	}
 
-	ret = client->use_resp3();
-	if (ret != 0)
+	const auto ret2 = client->use_resp3();
+	if (ret2 != 0)
 	{
 		return;
 	}
-	auto set_client = std::make_shared<RdSet>(client);
-	int count = set_client->sadd("test_set", { 10, 9, 8 });
+    const auto set_client = std::make_shared<RdSet>(client);
+    const auto count = set_client->sadd("test_set", { 10, 9, 8 });
 	std::cout << "set count: " << count << std::endl;
-	auto results = set_client->smembers("test_set");
+    const auto results = set_client->smembers("test_set");
 	if (results)
 	{
 		if (results->value_type() != ParserType::Set
@@ -131,21 +130,19 @@ void test_set()
 			return;
 		}
 		std::cout << "values:";
-		auto ptr = std::dynamic_pointer_cast<RedisComplexValue>(results);
-		auto it = ptr->results.begin();
-		for (; it != ptr->results.end(); ++it)
-		{
-			if ((*it)->is_string())
+        const auto ptr = std::dynamic_pointer_cast<RedisComplexValue>(results);
+        for (auto& result : ptr->results)
+        {
+			if (result->is_string())
 			{
-				auto ptr = std::dynamic_pointer_cast<RedisValue>(*it);
+				auto ptr = std::dynamic_pointer_cast<RedisValue>(result);
 				std::cout << " " << ptr->str_val_;
 			}
 		}
 		std::cout << std::endl;
 	}
-	bool flag = set_client->is_member("test_set", 2);
+    const bool flag = set_client->is_member("test_set", 2);
 	std::cout << "flag:" << flag << std::endl;
-	int a = 1;
 }
 
 int main()

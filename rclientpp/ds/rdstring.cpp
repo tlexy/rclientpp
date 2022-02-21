@@ -1,15 +1,17 @@
 ﻿#include "rdstring.h"
+
+#include <utility>
 #include "../core/rclient.h"
 
 NS_1
 
 RdString::RdString(std::shared_ptr<RClient> connection)
-	:Rd(connection)
+	:Rd(std::move(connection))
 {
 }
 
 int RdString::set(const std::string& key, const std::string& value,
-	uint64_t seconds, uint64_t millisec, const std::string& option)
+	uint64_t seconds, uint64_t millisec, const std::string& option) const
 {
 	std::string cmd = "set ";
 	cmd = cmd + key + " " + value;
@@ -33,8 +35,8 @@ int RdString::set(const std::string& key, const std::string& value,
 	}
 	auto ptr = _client->get_results();
 	*/
-	int ret_code = 0;
-	auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
+	size_t ret_code = 0;
+	const auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
 	if (ret_code != 0)
 	{
 		return 0;
@@ -46,13 +48,13 @@ int RdString::set(const std::string& key, const std::string& value,
 	return 0;
 }
 
-std::shared_ptr<BaseValue> RdString::get(const std::string& key)
+std::shared_ptr<BaseValue> RdString::get(const std::string& key) const
 {
 	std::string cmd = "get ";
 	cmd += key;
 
 	cmd += _crlf;
-	int ret_code = 0;
+	size_t ret_code = 0;
 	return redis_command(cmd.c_str(), cmd.size(), ret_code);
 }
 

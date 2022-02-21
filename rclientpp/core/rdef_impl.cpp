@@ -3,7 +3,7 @@
 
 NS_1
 
-std::shared_ptr<Attributes> to_attrs(std::shared_ptr<RedisComplexValue> ptr)
+std::shared_ptr<Attributes> to_attrs(const std::shared_ptr<RedisComplexValue>& ptr)
 {
 	if (ptr->count % 2 != 0)
 	{
@@ -15,7 +15,7 @@ std::shared_ptr<Attributes> to_attrs(std::shared_ptr<RedisComplexValue> ptr)
 	int i = 0;
 	for (; it != ptr->results.end(); ++it)
 	{
-		auto key_ptr = *it;
+		auto& key_ptr = *it;
 		if (++it != ptr->results.end())
 		{
 			// only simple type is allow
@@ -30,8 +30,8 @@ std::shared_ptr<Attributes> to_attrs(std::shared_ptr<RedisComplexValue> ptr)
 			{
 				return nullptr;
 			}
-			auto key1 = std::dynamic_pointer_cast<RedisValue>(key_ptr);
-			auto val1 = std::dynamic_pointer_cast<RedisValue>(val_ptr);
+			const auto key1 = std::dynamic_pointer_cast<RedisValue>(key_ptr);
+			const auto val1 = std::dynamic_pointer_cast<RedisValue>(val_ptr);
 			std::string value;
 			if (val1->is_string())
 			{
@@ -56,7 +56,7 @@ std::shared_ptr<Attributes> to_attrs(std::shared_ptr<RedisComplexValue> ptr)
 	return attr;
 }
 
-std::vector<std::shared_ptr<Attributes>> to_bulk_attrs(std::shared_ptr<RedisComplexValue> ptr)
+std::vector<std::shared_ptr<Attributes>> to_bulk_attrs(const std::shared_ptr<RedisComplexValue>& ptr)
 {
 	std::vector<std::shared_ptr<Attributes>> attris;
 	auto it = ptr->results.begin();
@@ -78,11 +78,11 @@ std::vector<std::shared_ptr<Attributes>> to_bulk_attrs(std::shared_ptr<RedisComp
 	return attris;
 }
 
-std::string get_string(std::shared_ptr<BaseValue> ptr)
+std::string get_string(const std::shared_ptr<BaseValue>& ptr)
 {
 	if (ptr)
 	{
-		auto vptr = std::dynamic_pointer_cast<RedisValue>(ptr);
+		const auto vptr = std::dynamic_pointer_cast<RedisValue>(ptr);
 		if (vptr)
 		{
 			return vptr->str_val_;
@@ -91,7 +91,7 @@ std::string get_string(std::shared_ptr<BaseValue> ptr)
 	return "";
 }
 
-int64_t get_number(std::shared_ptr<BaseValue> ptr)
+int64_t get_number(const std::shared_ptr<BaseValue>& ptr)
 {
 	if (!ptr)
 	{
@@ -99,14 +99,14 @@ int64_t get_number(std::shared_ptr<BaseValue> ptr)
 	}
 	if (ptr->is_string())
 	{
-		std::string str_num = get_string(ptr);
+		const std::string str_num = get_string(ptr);
 		if (is_num(str_num.c_str(), str_num.size()))
 		{
 			return std::atoll(str_num.c_str());
 		}
 		return 0;
 	}
-	auto vptr = std::dynamic_pointer_cast<RedisValue>(ptr);
+	const auto vptr = std::dynamic_pointer_cast<RedisValue>(ptr);
 	if (vptr)
 	{
 		return vptr->u.int_val_;

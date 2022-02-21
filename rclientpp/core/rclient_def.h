@@ -143,6 +143,11 @@ public:
 	BaseValue(ParserType type)
 		:type_(type)
 	{}
+	BaseValue(const BaseValue&) = delete;
+	BaseValue(BaseValue&&) = delete;
+	BaseValue& operator=(const BaseValue&) = delete;
+	BaseValue& operator=(BaseValue&&) = delete;
+	virtual ~BaseValue() = default;
 
 	ParserType value_type() const
 	{
@@ -182,8 +187,8 @@ public:
 		return false;
 	}
 
-	bool is_boolean()
-	{
+	bool is_boolean() const
+    {
 		if (type_ == ParserType::Boolean)
 		{
 			return true;
@@ -200,41 +205,35 @@ public:
 class RedisValue : public BaseValue
 {
 public:
-	RedisValue(ParserType type)
+    explicit RedisValue(const ParserType type)
 		:BaseValue(type)
 	{
 	}
-	RedisValue(int64_t val)
+	RedisValue(const int64_t val)
 		:BaseValue(ParserType::Number)
 	{
 		u.int_val_ = val;
 	}
-	RedisValue(long double val)
+	RedisValue(const long double val)
 		:BaseValue(ParserType::Double)
 	{
 		u.d_val_ = val;
 	}
 
-	RedisValue(bool val)
+	RedisValue(const bool val)
 		:BaseValue(ParserType::Boolean)
 	{
 		u.boolean_val_ = val;
 	}
 
-	RedisValue(const std::string& val, ParserType type)
+	RedisValue(std::string val, const ParserType type)
 		:BaseValue(type),
-		str_val_(val)
+		str_val_(std::move(val))
 	{
 	}
 
-	RedisValue(const std::string&& val, ParserType type)
-		:BaseValue(type),
-		str_val_(val)
-	{
-	}
-
-	virtual bool is_ok()
-	{
+    bool is_ok() override
+    {
 		if (value_type() == ParserType::SimpleString)
 		{
 			if (str_val_ == std::string("OK"))
@@ -251,14 +250,14 @@ public:
 		int64_t int_val_;
 		long double d_val_;
 		bool boolean_val_;
-	} u;
+	} u{};
 	std::string str_val_;
 };
 
 class RedisComplexValue : public BaseValue
 {
 public:
-	RedisComplexValue(ParserType type)
+	RedisComplexValue(const ParserType type)
 		:BaseValue(type)
 	{
 	}
@@ -275,7 +274,7 @@ public:
 	}
 	bool query(const std::string& key, std::string& value)
 	{
-		auto it = _maps.find(key);
+        const auto it = _maps.find(key);
 		if (it != _maps.end())
 		{
 			value = it->second;
@@ -292,10 +291,10 @@ private:
 	std::unordered_map<std::string, std::string> _maps;
 };
 
-std::shared_ptr<Attributes> to_attrs(std::shared_ptr<RedisComplexValue> ptr);
-std::vector<std::shared_ptr<Attributes>> to_bulk_attrs(std::shared_ptr<RedisComplexValue> ptr);
-std::string get_string(std::shared_ptr<BaseValue>);
-int64_t get_number(std::shared_ptr<BaseValue>);
+std::shared_ptr<Attributes> to_attrs(const std::shared_ptr<RedisComplexValue>& ptr);
+std::vector<std::shared_ptr<Attributes>> to_bulk_attrs(const std::shared_ptr<RedisComplexValue>& ptr);
+std::string get_string(const std::shared_ptr<BaseValue>&);
+int64_t get_number(const std::shared_ptr<BaseValue>&);
 
 NS_2
 

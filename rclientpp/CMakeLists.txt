@@ -4,8 +4,10 @@ project(rclientpp)
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../)
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11   -O2")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11  -O2")
+if (UNIX)
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11   -O2")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11  -O2")
+endif()
 
 FILE (GLOB RCLIENTPP_HEADERS "./core/*.h" "./ds/*.h" "./parser/*.h")
 

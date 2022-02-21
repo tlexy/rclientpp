@@ -43,7 +43,7 @@ namespace sockets
 		return inet_addr(ip);
 	}
 
-	int Connect(int fd, const struct sockaddr *sa, socklen_t salen)
+	int Connect(int fd, const struct sockaddr *sa, const socklen_t salen)
 	{
 		int ret = 0;
 		if ((ret = connect(fd, sa, salen)) < 0)
@@ -54,10 +54,10 @@ namespace sockets
 		return 0;
 	}
 
-	int ConnectTcp(const char* ip_str, int port, int timeoutms)
+	int ConnectTcp(const char* ip_str, const int port, const int timeoutms)
 	{
 		struct sockaddr_in serveraddr;
-		int confd = Socket(AF_INET, SOCK_STREAM, 0);
+		const int confd = Socket(AF_INET, SOCK_STREAM, 0);
 		if (timeoutms > 0 && confd > 0)
 		{
 			SetSendTimeout(confd, timeoutms);
@@ -65,7 +65,7 @@ namespace sockets
 			serveraddr.sin_family = AF_INET;
 			inet_pton(AF_INET, ip_str, &serveraddr.sin_addr.s_addr);
 			serveraddr.sin_port = htons(port);
-			int ret = Connect(confd, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+			const int ret = Connect(confd, reinterpret_cast<sockaddr*>(&serveraddr), sizeof(serveraddr));
 			if (ret != 0)
 			{
 				return -1;
@@ -75,45 +75,45 @@ namespace sockets
 		return confd;
 	}
 
-	int SetRecvTimeout(int fd, int ms)
+	int SetRecvTimeout(const int fd, const int ms)
 	{
 #ifdef _WIN32
 		int TimeOut = ms;
 #else
 		struct timeval TimeOut = { ms / 1000,1000 * (ms % 1000) };
 #endif
-		if (::setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&TimeOut, sizeof(TimeOut)) == SOCKET_ERROR)
+		if (::setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&TimeOut), sizeof(TimeOut)) == SOCKET_ERROR)
 		{
 			return -1;
 		}
 		return 0;
 	}
 
-	int SetSendTimeout(int fd, int ms)
+	int SetSendTimeout(const int fd, const int ms)
 	{
 #ifdef _WIN32
 		int TimeOut = ms;
 #else
 		struct timeval TimeOut = { ms / 1000,1000 * (ms % 1000) };
 #endif
-		if (::setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char*)&TimeOut, sizeof(TimeOut)) == SOCKET_ERROR)
+		if (::setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<char*>(&TimeOut), sizeof(TimeOut)) == SOCKET_ERROR)
 		{
 			return -1;
 		}
 		return 0;
 	}
 
-	int Socket(int family, int type, int protocol)
+	int Socket(const int family, const int type, const int protocol)
 	{
 		int n;
-		if ((n = socket(family, type, protocol)) < 0)
+		if ((n = static_cast<int>(socket(family, type, protocol))) < 0)
 			err_exit("socket error");
 		return n;
 	}
 
-	int Read(int fd, void *ptr, size_t nbytes)
+	std::size_t Read(const int fd, void *ptr, const size_t nbytes)
 	{
-		int n;
+		std::size_t n;
 	again:
 #if !defined(_WIN32)
 		if ((n = read(fd, ptr, nbytes)) == -1) {
@@ -123,12 +123,12 @@ namespace sockets
 				return -1;
 		}
 #else 
-		n = recv(fd, (char*)ptr, nbytes, 0);
+		n = recv(fd, static_cast<char*>(ptr), static_cast<int>(nbytes), 0);
 #endif
 		return n;
 	}
 
-	int Write(int fd, const void *ptr, size_t nbytes)
+	int Write(const int fd, const void *ptr, const size_t nbytes)
 	{
 		int n;
 	again:
@@ -140,12 +140,12 @@ namespace sockets
 				return -1;
 		}
 #else 
-		n = send(fd, (const char*)ptr, nbytes, 0);
+		n = send(fd, static_cast<const char*>(ptr), static_cast<int>(nbytes), 0);
 #endif
 		return n;
 	}
 
-	void Close(int fd)
+	void Close(const int fd)
 	{
 #if defined(_WIN32)
 		closesocket(fd);
@@ -154,15 +154,15 @@ namespace sockets
 #endif 
 	}
 
-	int KeepAlive(int fd)
+	int KeepAlive(const int fd)
 	{
-		int val = 1;
+		constexpr int val = 1;
 		int ret = 0;
-		ret = setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&val, sizeof(val));
+		ret = setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&val), sizeof(val));
 		return ret;
 	}
 
-	int SetBlocking(int fd, bool is_blocking)
+	int SetBlocking(const int fd, const bool is_blocking)
 	{
 #ifndef _WIN32
 		int flags;
@@ -189,10 +189,10 @@ namespace sockets
 		return 0;
 	}
 
-	int setNoDelay(int fd)
+	int setNoDelay(const int fd)
 	{
-		int yes = 1;
-		if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (const char*)&yes, sizeof(yes)) == -1) {
+		constexpr int yes = 1;
+		if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&yes), sizeof(yes)) == -1) {
 			return -1;
 		}
 		return 0;
@@ -278,7 +278,7 @@ namespace sockets
 			return false;
 		}
 		std::vector<int> vecs;
-		int offset = 0;
+		size_t offset = 0;
 		size_t pos = str.find('.', offset);
 		int count = 1;
 		while (pos != std::string::npos)
@@ -308,17 +308,17 @@ namespace sockets
 		{
 			return false;
 		}
-		std::string s_num = str.substr(offset);
+        const std::string s_num = str.substr(offset);
 		if (!isNum(s_num))
 		{
 			return false;
 		}
-		int num = std::atoi(s_num.c_str());
+        const int num = std::atoi(s_num.c_str());
 		vecs.push_back(num);
 		
-		for (int i = 0; i < vecs.size(); ++i)
-		{
-			if (vecs[i] < 0 || vecs[i] > 255)
+		for (const int vec : vecs)
+        {
+			if (vec < 0 || vec > 255)
 			{
 				return false;
 			}
@@ -328,9 +328,9 @@ namespace sockets
 
 	bool isNum(const std::string& str)
 	{
-		for (int i = 0; i < str.size(); ++i)
-		{
-			if (str[i] < '0' || str[i] > '9')
+		for (const char i : str)
+        {
+			if (i < '0' || i > '9')
 			{
 				return false;
 			}
@@ -342,13 +342,13 @@ namespace sockets
 	{
 		uint32_t pre = 0;
 		uint32_t suf = 0;
-		char* p = (char*)&host64;
+        auto p = reinterpret_cast<char*>(&host64);
 		memcpy(&pre, p, sizeof(uint32_t));
 		memcpy(&suf, p + sizeof(uint32_t), sizeof(uint32_t));
-		uint32_t npre = (uint32_t)htonl(pre);
-		uint32_t nsuf = (uint32_t)htonl(suf);
+        const auto npre = static_cast<uint32_t>(htonl(pre));
+        const auto nsuf = static_cast<uint32_t>(htonl(suf));
 		uint64_t ret = 0;
-		p = (char*)&ret;
+		p = reinterpret_cast<char*>(&ret);
 		memcpy(p, &nsuf, sizeof(nsuf));
 		memcpy(p + sizeof(nsuf), &npre, sizeof(npre));
 		return ret;

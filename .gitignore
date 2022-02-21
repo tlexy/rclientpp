@@ -9,3 +9,5 @@ build
 Debug
 bin
 log/
+CMakeSettings.json
+libs/

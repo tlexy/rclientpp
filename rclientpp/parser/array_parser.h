@@ -6,7 +6,7 @@
 
 NS_1
 
-class ArrayParser : public BaseParser
+class ArrayParser final : public BaseParser
 {
 public:
 	ArrayParser();
@@ -15,7 +15,7 @@ public:
 	* 0: successfully
 	* < 0: error 
 	*/
-	virtual int parse(std::shared_ptr<RClientBuffer> raw_resp, std::shared_ptr<BaseValue>& result);
+    int parse(std::shared_ptr<RClientBuffer> raw_resp, std::shared_ptr<BaseValue>& result) override;
 
 };
 

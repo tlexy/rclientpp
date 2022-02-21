@@ -6,7 +6,7 @@
 
 NS_1
 
-class MapParser : public BaseParser
+class MapParser final : public BaseParser
 {
 public:
 	MapParser();
@@ -15,7 +15,7 @@ public:
 	* 0: successfully
 	* < 0: error 
 	*/
-	virtual int parse(std::shared_ptr<RClientBuffer> raw_resp, std::shared_ptr<BaseValue>& result);
+    int parse(std::shared_ptr<RClientBuffer> raw_resp, std::shared_ptr<BaseValue>& result) override;
 
 };
 

@@ -12,10 +12,12 @@ project(examples)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/rclientpp/)
 
-SET(CMAKE_C_FLAGS "-std=c11 -O2 -W -w")
-SET(CMAKE_CXX_FLAGS "-std=c++11 -W -w")
-set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -O0 -g -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+if(UNIX)
+    SET(CMAKE_C_FLAGS "-std=c11 -O2 -W -w")
+    SET(CMAKE_CXX_FLAGS "-std=c++11 -W -w")
+    set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -O0 -g -ggdb")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+endif()
 
 SET(EXTRA_LIBS rclientpp)
 

@@ -11,7 +11,7 @@ namespace rcpp {
 		//FD_ZERO(&_efds);
 	}
 
-	AsyncSocketClient::AsyncSocketClient(int sockfd)
+	AsyncSocketClient::AsyncSocketClient(const int sockfd)
 	{}
 
 	int AsyncSocketClient::sockfd() const
@@ -19,10 +19,10 @@ namespace rcpp {
 		return _sockfd;
 	}
 
-	bool AsyncSocketClient::connect(const char* ip_str, int port, int timeoutms)
+	bool AsyncSocketClient::connect(const char* ip_str, const int port, const int timeout_ms)
 	{
-		struct sockaddr_in serveraddr;
-		int confd = sockets::Socket(AF_INET, SOCK_STREAM, 0);
+        sockaddr_in server_address;
+		const int confd = sockets::Socket(AF_INET, SOCK_STREAM, 0);
 		if (confd < 0)
 		{
 			_err_code = confd;
@@ -31,10 +31,10 @@ namespace rcpp {
 
 		_sockfd = confd;
 		//2.初始化服务器地址
-		memset(&serveraddr, 0, sizeof(serveraddr));
-		serveraddr.sin_family = AF_INET;
-		inet_pton(AF_INET, ip_str, &serveraddr.sin_addr.s_addr);
-		serveraddr.sin_port = htons(port);
+		memset(&server_address, 0, sizeof(server_address));
+		server_address.sin_family = AF_INET;
+		inet_pton(AF_INET, ip_str, &server_address.sin_addr.s_addr);
+		server_address.sin_port = htons(static_cast<unsigned short>(port));
 
 		int ret = sockets::SetBlocking(_sockfd, false);
 		if (ret < 0)
@@ -48,7 +48,7 @@ namespace rcpp {
 			_err_code = ret;
 			return false;
 		}
-		ret = sockets::Connect(_sockfd, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+		ret = sockets::Connect(_sockfd, reinterpret_cast<sockaddr*>(&server_address), sizeof(server_address));
 		if (ret == 0)
 		{
 			_err_code = ret;
@@ -70,10 +70,8 @@ namespace rcpp {
 #endif
 
 		FD_SET(_sockfd, &_wfds);
-		struct timeval tv;
-		tv.tv_sec = timeoutms / 1000;
-		tv.tv_usec = (timeoutms % 1000) * 1000;
-		ret = select(_sockfd + 1, NULL, &_wfds, NULL, &tv);
+        const timeval tv{ timeout_ms / 1000 , (timeout_ms % 1000) * 1000 };
+		ret = select(_sockfd + 1, nullptr, &_wfds, nullptr, &tv);
 		if (ret == 0)
 		{
 			_err_code = ret;
@@ -84,7 +82,7 @@ namespace rcpp {
 
 		socklen_t length = sizeof(_err_code);
 		//获取任意类型、任意状态套接口的选项当前值
-		if (getsockopt(_sockfd, SOL_SOCKET, SO_ERROR, (char*)&_err_code, &length) < 0)
+		if (getsockopt(_sockfd, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&_err_code), &length) < 0)
 		{
 			printf("get socket option failed\n");
 			return false;
@@ -111,9 +109,9 @@ namespace rcpp {
 #endif
 	}
 
-	int AsyncSocketClient::write(const char* buf, int len, int timeoutms)
+	size_t AsyncSocketClient::write(const char* buf, const size_t len, const int timeout_ms)
 	{
-		int written_len = write(buf, len);
+		auto written_len = write(buf, len);
 		if (written_len == len)
 		{
 			return len;
@@ -122,12 +120,11 @@ namespace rcpp {
 		{
 			FD_ZERO(&_wfds);
 			FD_ZERO(&_rfds);
-			//FD_ZERO(&_efds);
 
 			FD_SET(_sockfd, &_wfds);
-			_tv.tv_sec = timeoutms / 1000;
-			_tv.tv_usec = (timeoutms % 1000) * 1000;
-			int ret = select(_sockfd + 1, NULL, &_wfds, NULL, &_tv);
+			_tv.tv_sec = timeout_ms / 1000;
+			_tv.tv_usec = (timeout_ms % 1000) * 1000;
+			const int ret = select(_sockfd + 1, nullptr, &_wfds, nullptr, &_tv);
 			if (ret == 0)
 			{
 				_err_code = ret;
@@ -142,22 +139,21 @@ namespace rcpp {
 		return written_len;
 	}
 
-	int AsyncSocketClient::read(char* buf, int len, int timeoutms)
+	size_t AsyncSocketClient::read(char* buf, const size_t len, const int timeout_ms)
 	{
-		int readlen = read(buf, len);
-		if (readlen > 0)
+		const auto read_len = read(buf, len);
+		if (read_len > 0)
 		{
-			return readlen;
+			return read_len;
 		}
 		FD_ZERO(&_rfds);
 		FD_ZERO(&_wfds);
-		//FD_ZERO(&_efds);
 
 		FD_SET(_sockfd, &_rfds);
 
-		_tv.tv_sec = timeoutms / 1000;
-		_tv.tv_usec = (timeoutms % 1000) * 1000;
-		int ret = select(_sockfd + 1, &_rfds, NULL, NULL, &_tv);
+		_tv.tv_sec = timeout_ms / 1000;
+		_tv.tv_usec = (timeout_ms % 1000) * 1000;
+		const int ret = select(_sockfd + 1, &_rfds, nullptr, nullptr, &_tv);
 		if (ret == 0)
 		{
 			_err_code = ret;
@@ -172,13 +168,13 @@ namespace rcpp {
 		return 0;
 	}
 
-	int AsyncSocketClient::read(char* buf, int len)
-	{
+	size_t AsyncSocketClient::read(char* buf, const size_t len) const
+    {
 		return sockets::Read(_sockfd, buf, len);
 	}
 
-	int AsyncSocketClient::write(const char* buf, int len)
-	{
+	size_t AsyncSocketClient::write(const char* buf, const size_t len) const
+    {
 		return sockets::Write(_sockfd, buf, len);
 	}
 

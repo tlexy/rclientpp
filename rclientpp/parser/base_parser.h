@@ -12,8 +12,13 @@ NS_1
 class BaseParser
 {
 public:
-	BaseParser(ParserType type);
-
+	explicit BaseParser(ParserType type);
+	BaseParser(const BaseParser&) = delete;
+	BaseParser(BaseParser&&) = delete;
+	BaseParser& operator=(const BaseParser&) = delete;
+	BaseParser& operator=(BaseParser&&) = delete;
+    virtual ~BaseParser() = default;
+    
 	virtual ParserType type2();
 
 	/*
@@ -22,27 +27,27 @@ public:
 	*/
 	virtual int parse(std::shared_ptr<RClientBuffer> raw_resp, std::shared_ptr<BaseValue>& result) = 0;
 
-	int get_aggregate_len(std::shared_ptr<RClientBuffer>);
-	int get_len_string(std::shared_ptr<RClientBuffer>, int len, std::string& outstr);
+	int get_aggregate_len(const std::shared_ptr<RClientBuffer>&) const;
+	int get_len_string(const std::shared_ptr<RClientBuffer>&, std::size_t len, std::string& outstr) const;
 
-	int get_normal_string(std::shared_ptr<RClientBuffer> bufptr, std::string& out);
+	int get_normal_string(const std::shared_ptr<RClientBuffer>& bufptr, std::string& out) const;
 
-	int process_blob_string(std::shared_ptr<RClientBuffer>, std::string& outstr);
-	int process_simple_string(std::shared_ptr<RClientBuffer>, std::string& outstr);
-	int process_simple_error(std::shared_ptr<RClientBuffer>, std::string& outstr);
-	int process_blob_error(std::shared_ptr<RClientBuffer>, std::string& outstr);
-	int process_number(std::shared_ptr<RClientBuffer>, int64_t&);
-	int process_big_number(std::shared_ptr<RClientBuffer>, std::string& outstr);
-	int process_nil(std::shared_ptr<RClientBuffer>);
-	int process_double(std::shared_ptr<RClientBuffer>, long double&);
-	int process_bool(std::shared_ptr<RClientBuffer>, bool&);
-	int process_verbatim_string(std::shared_ptr<RClientBuffer>, std::string& outstr);
+	int process_blob_string(const std::shared_ptr<RClientBuffer>&, std::string& outstr);
+	int process_simple_string(const std::shared_ptr<RClientBuffer>&, std::string& outstr) const;
+	int process_simple_error(const std::shared_ptr<RClientBuffer>&, std::string& outstr) const;
+	int process_blob_error(const std::shared_ptr<RClientBuffer>&, std::string& outstr);
+	int process_number(const std::shared_ptr<RClientBuffer>&, int64_t&) const;
+	int process_big_number(const std::shared_ptr<RClientBuffer>&, std::string& outstr) const;
+    static int process_nil(const std::shared_ptr<RClientBuffer>&);
+	int process_double(const std::shared_ptr<RClientBuffer>&, long double&) const;
+	int process_bool(const std::shared_ptr<RClientBuffer>&, bool&) const;
+	int process_verbatim_string(const std::shared_ptr<RClientBuffer>&, std::string& outstr);
 
 private:
-	inline void move_item(std::shared_ptr<RClientBuffer>, int itemlen);
+	inline void move_item(const std::shared_ptr<RClientBuffer>&, std::size_t itemlen) const;
 
 protected:
-	int parse_array(std::shared_ptr<RClientBuffer> bufptr, int amounts, std::shared_ptr<RedisComplexValue>& result);
+	int parse_array(const std::shared_ptr<RClientBuffer>& bufptr, int amounts, std::shared_ptr<RedisComplexValue>& result);
 
 //public:
 //	std::list<std::shared_ptr<RedisValue>> results;

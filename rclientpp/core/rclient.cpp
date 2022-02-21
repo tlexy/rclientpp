@@ -11,31 +11,31 @@ const static std::string CRLF = "\r\n";
 
 int RClient::_read_timeout = 30000;
 
-RClient::RClient(const std::string& ipstr, int port)
-	:_ipstr(ipstr),
-	_port(port),
-	_bufptr(std::make_shared<RClientBuffer>(1024)),
-	_map_parser(std::make_shared<MapParser>()),
-	_array_parser(std::make_shared<ArrayParser>()),
-	_aclient(std::make_shared<AsyncSocketClient>())
+RClient::RClient(std::string ipstr, const int port)
+	: _aclient(std::make_shared<AsyncSocketClient>()),
+      _ipstr(std::move(ipstr)),
+      _port(port),
+      _bufptr(std::make_shared<RClientBuffer>(1024)),
+      _map_parser(std::make_shared<MapParser>()),
+      _array_parser(std::make_shared<ArrayParser>())
 {
 	_strerr.resize(128, '\0');
 }
 
-int RClient::connect(const std::string& username, const std::string& auth, int timeoutms)
+int RClient::connect(const std::string& username, const std::string& auth, int timeout_ms)
 {
-	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
+	const bool flag = _aclient->connect(_ipstr.c_str(), _port, timeout_ms);
 	if (!flag)
 	{
 		return -1;
 	}
 	_sockfd = _aclient->sockfd();
-	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
+	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeout_ms);
 	if (_sockfd <= 0)
 	{
 		return TCP_CONNECTED_FAILED;
 	}*/
-	int ret = _sock_param();
+	const int ret = _sock_param();
 	if (ret != 0)
 	{
 		return ret;
@@ -45,20 +45,20 @@ int RClient::connect(const std::string& username, const std::string& auth, int t
 	return do_connect(cmd);
 }
 
-int RClient::connect(const std::string& auth, int timeoutms)
+int RClient::connect(const std::string& auth, const int timeout_ms)
 {
-	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
+	const bool flag = _aclient->connect(_ipstr.c_str(), _port, timeout_ms);
 	if (!flag)
 	{
 		return -1;
 	}
 	_sockfd = _aclient->sockfd();
-	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
+	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeout_ms);
 	if (_sockfd <= 0)
 	{
 		return TCP_CONNECTED_FAILED;
 	}*/
-	int ret = _sock_param();
+	const int ret = _sock_param();
 	if (ret != 0)
 	{
 		return ret;
@@ -68,15 +68,15 @@ int RClient::connect(const std::string& auth, int timeoutms)
 	return do_connect(cmd);
 }
 
-int RClient::connect(int timeoutms)
+int RClient::connect(const int timeout_ms)
 {
-	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
+	const bool flag = _aclient->connect(_ipstr.c_str(), _port, timeout_ms);
 	if (!flag)
 	{
 		return -1;
 	}
 	_sockfd = _aclient->sockfd();
-	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
+	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeout_ms);
 	if (_sockfd <= 0)
 	{
 		return TCP_CONNECTED_FAILED;
@@ -84,7 +84,7 @@ int RClient::connect(int timeoutms)
 	return _sock_param();
 }
 
-int RClient::_sock_param()
+int RClient::_sock_param() const
 {
 	/*int ret = sockets::SetRecvTimeout(_sockfd, _read_timeout);
 	if (ret != 0)
@@ -103,10 +103,10 @@ int RClient::_sock_param()
 int RClient::do_connect(const std::string& cmd)
 {
 	printf("do connect with AUTH.\n");
-	int ret = command(cmd.c_str(), cmd.size());
+	auto ret = command(cmd.c_str(), cmd.size());
 	if (ret == cmd.size())
 	{
-		auto ptr = get_results(ret);
+		const auto ptr = get_results(ret);
 		if (ret != 0)
 		{
 			return AUTH_FAILED;
@@ -116,12 +116,10 @@ int RClient::do_connect(const std::string& cmd)
 			printf("do connect with AUTH successfully\n");
 			return 0;
 		}
-		else
-		{
-			_get_error(ptr);
-			return AUTH_FAILED;
-		}
-		/*int len = sockets::Read(_sockfd, (void*)_strerr.c_str(), _strerr.size());
+
+	    _get_error(ptr);
+        return AUTH_FAILED;
+        /*int len = sockets::Read(_sockfd, (void*)_strerr.c_str(), _strerr.size());
 		if (len > 0)
 		{
 			if (_strerr[0] == '-')
@@ -135,13 +133,10 @@ int RClient::do_connect(const std::string& cmd)
 			return TCP_TIMEOUT;
 		}*/
 	}
-	else
-	{
-		return TCP_SEND_FAILED;
-	}
+    return TCP_SEND_FAILED;
 }
 
-int RClient::get_error(std::string& errstr)
+int RClient::get_error(std::string& errstr) const
 {
 	errstr = _strerr;
 	return _err_code;
@@ -152,12 +147,12 @@ std::string RClient::strerror()
 	return _strerr;
 }
 
-void RClient::set_read_timeout(int millisec)
+void RClient::set_read_timeout(const int millisec)
 {
 	_read_timeout = millisec;
 }
 
-int RClient::command(const char* cmd, int len)
+size_t RClient::command(const char* cmd, const std::size_t len)
 {
 	if (len < 3)
 	{
@@ -165,7 +160,7 @@ int RClient::command(const char* cmd, int len)
 		return SYNTAX_ERROR;
 	}
 	_bufptr->reset();
-	int rest = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size());
+	size_t rest = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size());
 	while (rest > 0)
 	{
 		rest = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size());
@@ -173,30 +168,30 @@ int RClient::command(const char* cmd, int len)
 	if (cmd[len - 2] == '\r' && cmd[len - 1] == '\n')
 	{
 		//_err_code = sockets::Write(_sockfd, cmd, len);;
-		_err_code = _aclient->write(cmd, len, _read_timeout);
+		_err_code = static_cast<int>(_aclient->write(cmd, len, _read_timeout));
 		return _err_code;
 	}
 	_err_code = SYNTAX_ERROR;
 	return SYNTAX_ERROR;
 }
 
-int RClient::recv(void* buf, int len)
+size_t RClient::recv(void* buf, const int len) const
 {
 	//return sockets::Read(_sockfd, buf, len);
-	return _aclient->read((char*)buf, len, _read_timeout);
+	return _aclient->read(static_cast<char*>(buf), len, _read_timeout);
 }
 
-int RClient::use_resp3()
+size_t RClient::use_resp3()
 {
 	_err_code = 0;
 	static std::string hell_cmd3 = "HELLO 3\r\n";
-	int ret = command(hell_cmd3.c_str(), hell_cmd3.size());
+	auto ret = command(hell_cmd3.c_str(), hell_cmd3.size());
 	if (ret == hell_cmd3.size())
 	{
 		memset((void*)_strerr.c_str(), 0x0, _strerr.size());
 		_bufptr->reset();
 
-		auto ptr = get_results(ret);
+		const auto ptr = get_results(ret);
 		if (ret != 0)
 		{
 			return ret;
@@ -211,32 +206,32 @@ int RClient::use_resp3()
 	return TCP_SEND_FAILED;
 }
 
-void RClient::_get_error(std::shared_ptr<BaseValue> ptr)
+void RClient::_get_error(const std::shared_ptr<BaseValue> ptr) const
 {
 	memset((void*)_strerr.c_str(), 0x0, _strerr.size());
 	if (ptr && ptr->value_type() == ParserType::SimpleError)
 	{
-		auto sptr = std::dynamic_pointer_cast<RedisValue>(ptr);
-		size_t min_size = sptr->str_val_.size() > _strerr.size() ? _strerr.size() : sptr->str_val_.size();
+		const auto sptr = std::dynamic_pointer_cast<RedisValue>(ptr);
+		const size_t min_size = sptr->str_val_.size() > _strerr.size() ? _strerr.size() : sptr->str_val_.size();
 		memcpy((void*)_strerr.c_str(), sptr->str_val_.c_str(), min_size);
 	}
 }
 
-std::shared_ptr<BaseValue> RClient::get_results(int& ret_code)
+std::shared_ptr<BaseValue> RClient::get_results(size_t& ret_code)
 {
 	ret_code = PARSE_FORMAT_ERROR;
 	_bufptr->reset();
 READ_DATA:
 	//int len = sockets::Read(_sockfd, (void*)_bufptr->write_ptr(), _bufptr->writable_size());
-	int len = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size(), _read_timeout);
+	const auto len = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size(), _read_timeout);
 	if (len <= 0)
 	{
 		ret_code = TCP_CONNECTION_ERROR;
 		return nullptr;
 	}
 	_bufptr->has_written(len);
-	char* text = _bufptr->read_ptr();
-	size_t old_pos = _bufptr->get_read_off();
+	const char* text = _bufptr->read_ptr();
+	const size_t old_pos = _bufptr->get_read_off();
 	std::shared_ptr<BaseValue> result = nullptr;
 	int ret = 0;
 	std::string outstr;
@@ -405,15 +400,14 @@ READ_DATA:
 		_bufptr->set_read_off(old_pos);
 		goto READ_DATA;
 	}
-	else if (ret < 0)
-	{
-		return nullptr;
-	}
-	else
-	{
-		ret_code = 0;
-	}
-	return result;
+
+    if (ret < 0)
+    {
+        return nullptr;
+    }
+
+    ret_code = 0;
+    return result;
 }
 
 int RClient::use_resp2()

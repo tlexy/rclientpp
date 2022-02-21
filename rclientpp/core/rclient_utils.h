@@ -3,8 +3,8 @@
 
 namespace rcpp {
 
-	bool is_num(const char* str, int len);
-	bool is_digit(const char* str, int len);
+	bool is_num(const char* str, std::size_t len);
+	bool is_digit(const char* str, std::size_t len);
 }
 
 #endif

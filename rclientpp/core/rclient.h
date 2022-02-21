@@ -14,36 +14,36 @@ class AsyncSocketClient;
 class RClient
 {
 public:
-	RClient(const std::string& ipstr, int port);
+	RClient(std::string ipstr, int port);
 
-	int connect(const std::string& username, const std::string& auth, int timeoutms = 10000);
-	int connect(const std::string& auth, int timeoutms = 10000);
-	int connect(int timeoutms = 10000);
+	int connect(const std::string& username, const std::string& auth, int timeout_ms = 10000);
+	int connect(const std::string& auth, int timeout_ms = 10000);
+	int connect(int timeout_ms = 10000);
 
-	int use_resp3();
-	int use_resp2();
+	size_t use_resp3();
+    static int use_resp2();
 
 	void close();
 
 	static void set_read_timeout(int millisec);
 
 	//将命令发送出去
-	int command(const char* cmd, int len);
+	size_t command(const char* cmd, std::size_t len);
 	//接收返回
-	int recv(void* buf, int len);
+	size_t recv(void* buf, int len) const;
 
-	int get_error(std::string& errstr);
+	int get_error(std::string& errstr) const;
 
-	std::shared_ptr<BaseValue> get_results(int& ret_code);
+	std::shared_ptr<BaseValue> get_results(size_t& ret_code);
 
 	std::string strerror();
 
 private:
 	int do_connect(const std::string& cmd);
 
-	void _get_error(std::shared_ptr<BaseValue>);
+	void _get_error(std::shared_ptr<BaseValue>) const;
 
-	int _sock_param();
+	int _sock_param() const;
 
 private:
 	int _sockfd{-1};
@@ -51,7 +51,7 @@ private:
 
 	std::string _ipstr;
 	int _port;
-	int _err_code;
+	int _err_code{};
 	static int _read_timeout;
 	std::string _strerr;
 	std::shared_ptr<RClientBuffer> _bufptr;

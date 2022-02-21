@@ -11,13 +11,16 @@ namespace rcpp {
 	public:
 		PtrBuffer();
 		PtrBuffer(const char*, size_t);
-
+		PtrBuffer(const PtrBuffer&) = delete;
+		PtrBuffer(PtrBuffer&&) = delete;
+		PtrBuffer& operator=(const PtrBuffer&) = delete;
+		PtrBuffer& operator=(PtrBuffer&&) = delete;
 		~PtrBuffer();
 
-		size_t size() { return _len; }
+		size_t size() const { return _len; }
 
-		const char* data() { return _buf; }
-		char* mdata() { return _buf; }
+		const char* data() const { return _buf; }
+		char* mdata() const { return _buf; }
 
 	private:
 		char* _buf;

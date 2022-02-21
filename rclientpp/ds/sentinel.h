@@ -39,19 +39,19 @@ struct RedisNode
 class Sentinel
 {
 public:
-	Sentinel(const SentinelOptions&);
+    explicit Sentinel(SentinelOptions);
 
     //检查sentinel节点的连接情况，并返回可连接的sentinel节点数量
-    int check();
+    std::size_t check();
 
-    std::vector<RedisNode> get_masters();
-    std::shared_ptr<RedisNode> get_master_by_name(const std::string&);
-    std::vector<RedisNode> get_slaves(const std::string&);
+    std::vector<RedisNode> get_masters() const;
+    std::shared_ptr<RedisNode> get_master_by_name(const std::string&) const;
+    std::vector<RedisNode> get_slaves(const std::string&) const;
 
 private:
     SentinelOptions _options;
 
-    std::vector<std::shared_ptr<RClient>> _sentinel_connetions;
+    std::vector<std::shared_ptr<RClient>> _sentinel_connections;
 };
 
 NS_2

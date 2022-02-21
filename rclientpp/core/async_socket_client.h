@@ -16,17 +16,17 @@ namespace rcpp {
 	{
 	public:
 		AsyncSocketClient();
-		AsyncSocketClient(int sockfd);
+        explicit AsyncSocketClient(int sockfd);
 
 		int sockfd() const;
 
-		bool connect(const char* ip_str, int port, int timeoutms);
+		bool connect(const char* ip_str, int port, int timeout_ms);
 
-		int read(char* buf, int len, int timeoutms);
-		int write(const char* buf, int len, int timeoutms);
+		size_t read(char* buf, size_t len, int timeout_ms);
+		size_t write(const char* buf, size_t len, int timeout_ms);
 
-		int read(char* buf, int len);
-		int write(const char* buf, int len);
+		size_t read(char* buf, size_t len) const;
+		size_t write(const char* buf, size_t len) const;
 
 		void close();
 
