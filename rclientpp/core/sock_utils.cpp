@@ -61,12 +61,10 @@ namespace sockets
 		if (timeoutms > 0 && confd > 0)
 		{
 			SetSendTimeout(confd, timeoutms);
-			//2.初始化服务器地址
 			memset(&serveraddr, 0, sizeof(serveraddr));
 			serveraddr.sin_family = AF_INET;
 			inet_pton(AF_INET, ip_str, &serveraddr.sin_addr.s_addr);
 			serveraddr.sin_port = htons(port);
-			//3.链接服务器
 			int ret = Connect(confd, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 			if (ret != 0)
 			{
