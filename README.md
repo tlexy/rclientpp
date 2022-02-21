@@ -72,7 +72,7 @@ if (ret != 0)
 	return;
 }
 
-std::string cmd = "sadd test_set 101 102"
+std::string cmd = "sadd test_set 101 102\r\n"
 int written_len = _client->command(cmd.c_str(), cmd.size());
 if (written_len != cmd.size())
 {
