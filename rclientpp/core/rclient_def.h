@@ -134,6 +134,7 @@ enum class ParserType
 	BlobError,
 	Verbatim,
 	BigNumber,
+	Push,
 
 };
 
@@ -143,6 +144,9 @@ public:
 	BaseValue(ParserType type)
 		:type_(type)
 	{}
+
+	virtual int64_t get_number() = 0;
+	virtual std::string get_string() = 0;
 
 	ParserType value_type() const
 	{
@@ -166,6 +170,15 @@ public:
 	bool is_nil() const
 	{
 		if (type_ == ParserType::NilValue)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	bool is_number() const
+	{
+		if (type_ == ParserType::Number)
 		{
 			return true;
 		}
@@ -233,6 +246,16 @@ public:
 	{
 	}
 
+	virtual int64_t get_number()
+	{
+		return u.int_val_;
+	}
+
+	virtual std::string get_string()
+	{
+		return str_val_;
+	}
+
 	virtual bool is_ok()
 	{
 		if (value_type() == ParserType::SimpleString)
@@ -261,6 +284,15 @@ public:
 	RedisComplexValue(ParserType type)
 		:BaseValue(type)
 	{
+	}
+	virtual int64_t get_number()
+	{
+		return 0;
+	}
+
+	virtual std::string get_string()
+	{
+		return std::string("");
 	}
 	std::list<std::shared_ptr<BaseValue>> results;
 	int count{0};

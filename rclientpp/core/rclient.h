@@ -40,6 +40,8 @@ public:
 
 	std::string strerror();
 
+	void set_error_str(const std::string&);
+
 private:
 	int do_connect(const std::string& cmd);
 

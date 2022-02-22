@@ -13,6 +13,16 @@ void Rd::set_connection(std::shared_ptr<RClient> connection)
 	_client = connection;
 }
 
+void Rd::set_err_str(const std::string& str)
+{
+	_client->set_error_str(str);
+}
+
+std::string Rd::get_err_str()
+{
+	return _client->strerror();
+}
+
 std::shared_ptr<BaseValue> Rd::redis_command(const char* cmd, int len, int& ret_code)
 {
 	int ret = _client->command(cmd, len);

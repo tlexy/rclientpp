@@ -183,6 +183,11 @@ std::string RClient::strerror()
 	return _strerr;
 }
 
+void RClient::set_error_str(const std::string& str)
+{
+	_strerr = str;
+}
+
 void RClient::set_read_timeout(int millisec)
 {
 	_read_timeout = millisec;
@@ -418,6 +423,16 @@ READ_DATA:
 	{
 		_bufptr->has_read(1);
 		result = std::make_shared<RedisComplexValue>(ParserType::Set);
+		ret = _array_parser->parse(_bufptr, result);
+		if (ret != 0)
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '>')
+	{
+		_bufptr->has_read(1);
+		result = std::make_shared<RedisComplexValue>(ParserType::Push);
 		ret = _array_parser->parse(_bufptr, result);
 		if (ret != 0)
 		{
