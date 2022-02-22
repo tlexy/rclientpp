@@ -9,6 +9,11 @@ NS_1
 
 const static std::string CRLF = "\r\n";
 
+const static std::string strConnectError = "connect to server failed";
+const static std::string strSockParamError = "set tcp socket parameters failed";
+const static std::string strAuthError = "AUTH failed";
+const static std::string strTcpSendError = "tcp send failed";
+
 int RClient::_read_timeout = 30000;
 
 RClient::RClient(const std::string& ipstr, int port)
@@ -50,6 +55,7 @@ int RClient::connect(const std::string& auth, int timeoutms)
 	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
 	if (!flag)
 	{
+		_strerr = strConnectError;
 		return -1;
 	}
 	_sockfd = _aclient->sockfd();
@@ -73,6 +79,7 @@ int RClient::connect(int timeoutms)
 	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
 	if (!flag)
 	{
+		_strerr = strConnectError;
 		return -1;
 	}
 	_sockfd = _aclient->sockfd();
@@ -94,9 +101,14 @@ int RClient::_sock_param()
 	int ret = sockets::KeepAlive(_sockfd);
 	if (ret != 0)
 	{
+		_strerr = strSockParamError;
 		return ret;
 	}
 	ret = sockets::setNoDelay(_sockfd);
+	if (ret != 0)
+	{
+		_strerr = strSockParamError;
+	}
 	return ret;
 }
 
@@ -109,6 +121,7 @@ int RClient::do_connect(const std::string& cmd)
 		auto ptr = get_results(ret);
 		if (ret != 0)
 		{
+			_strerr = strAuthError;
 			return AUTH_FAILED;
 		}
 		if (ptr && ptr->is_ok())
@@ -137,6 +150,7 @@ int RClient::do_connect(const std::string& cmd)
 	}
 	else
 	{
+		_strerr = strTcpSendError;
 		return TCP_SEND_FAILED;
 	}
 }
