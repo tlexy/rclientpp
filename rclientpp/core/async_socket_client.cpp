@@ -11,8 +11,13 @@ namespace rcpp {
 		//FD_ZERO(&_efds);
 	}
 
-	AsyncSocketClient::AsyncSocketClient(int sockfd)
-	{}
+	/*AsyncSocketClient::AsyncSocketClient(int sockfd)
+	{}*/
+
+	AsyncSocketClient::~AsyncSocketClient()
+	{
+		close();
+	}
 
 	int AsyncSocketClient::sockfd() const
 	{
