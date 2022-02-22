@@ -181,6 +181,8 @@ int main()
 	}
 	*/
 
+	/* Send command and wait for responses
+	* 
 	std::string ip("81.71.41.235");
 	int port = 6380;
 
@@ -222,7 +224,7 @@ int main()
 	{
 		std::cout << "get results error: " << ret_code << std::endl;
 	}
-	
+	*/
 
 	std::cin.get();
 

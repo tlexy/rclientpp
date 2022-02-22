@@ -89,7 +89,7 @@ if (result_ptr)
 {
 	if (result_ptr->value_type() == ParserType::Number)
 	{
-	auto ptr = std::dynamic_pointer_cast<RedisValue>(result_ptr);
+		 auto ptr = std::dynamic_pointer_cast<RedisValue>(result_ptr);
 		std::cout << "result : " << ptr->u.int_val_ << std::endl;
 	}
 }	
@@ -125,7 +125,10 @@ enum class ParserType
 
 * RedisValue and RedisComplexValue have common super class: BaseValue
 
-### Use redis structures
+And so for, you have learn all that how to use rclientpp to connect and communicate with redis server. 
+Also, you could use the advanced data structure the communicate to the redis server. But only few data structure and few operations are supported now, we welcome you to add more data structures and operations to this module.
+
+### Use redis advanced structures
 Right now, only few op is supported
 
 ```
