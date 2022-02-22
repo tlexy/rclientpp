@@ -24,7 +24,7 @@ Just use visual studio to open the rclientpp.sln, and then to compile the projec
 ### Linux
 Use CMake. follow the steps:
 ```
-    > git clone xxx
+    > git clone git@github.com:tlexy/rclientpp.git
     > cd rclientpp
     > mkdir build
     > cd build
