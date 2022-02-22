@@ -265,9 +265,14 @@ std::shared_ptr<BaseValue> RClient::get_results(int& ret_code)
 READ_DATA:
 	//int len = sockets::Read(_sockfd, (void*)_bufptr->write_ptr(), _bufptr->writable_size());
 	int len = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size(), _read_timeout);
-	if (len <= 0)
+	if (len == 0)
 	{
 		ret_code = TCP_CONNECTION_ERROR;
+		return nullptr;
+	}
+	else if (len == -1)
+	{
+		ret_code = TCP_TIMEOUT;
 		return nullptr;
 	}
 	_bufptr->has_written(len);
