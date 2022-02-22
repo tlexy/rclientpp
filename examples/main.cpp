@@ -162,7 +162,66 @@ int main()
 	//3. test_async_client();
 	//4. test_hash();
 	//5. test_sentinel();
-	test_set();
+	//6. test_set();
+
+	/* connect to redis server...
+	*
+	std::string ip("81.71.41.235");
+	int port = 6380;
+
+	auto client = std::make_shared<RClient>(ip, port);
+	int ret = client->connect("tttaBa231_?");
+	if (ret != 0)
+	{
+		std::cout << "Err: " << client->strerror() << std::endl;
+	}
+	else
+	{
+		std::cout << "connect successfully..." << std::endl;
+	}
+	*/
+
+	std::string ip("81.71.41.235");
+	int port = 6380;
+
+	auto client = std::make_shared<RClient>(ip, port);
+	int ret = client->connect("tttaBa231_?");
+	if (ret != 0)
+	{
+		std::cout << "Err: " << client->strerror() << std::endl;
+	}
+	else
+	{
+		std::cout << "connect successfully..." << std::endl;
+	}
+
+	//transfer to RESP 3
+	ret = client->use_resp3();
+	if (ret != 0)
+	{
+		return 1;
+	}
+	std::string cmd = "sadd test_set 101 102\r\n";
+	int written_len = client->command(cmd.c_str(), cmd.size());
+	if (written_len != cmd.size())
+	{
+		//send error
+		return 1;
+	}
+	int ret_code = 0;
+	auto result_ptr = client->get_results(ret_code);
+	if (result_ptr)
+	{
+		if (result_ptr->value_type() == ParserType::Number)
+		{
+			auto ptr = std::dynamic_pointer_cast<RedisValue>(result_ptr);
+			std::cout << "result : " << ptr->u.int_val_ << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "get results error: " << ret_code << std::endl;
+	}
 	
 
 	std::cin.get();

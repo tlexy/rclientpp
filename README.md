@@ -65,22 +65,39 @@ if (ret != 0)
 {
 	std::cout << "Err: " << client->strerror() << std::endl;
 }
+else
+{
+	std::cout << "connect successfully..." << std::endl;
+}
+
 //transfer to RESP 3
 ret = client->use_resp3();
 if (ret != 0)
 {
-	return;
+	return 1;
 }
-
-std::string cmd = "sadd test_set 101 102\r\n"
-int written_len = _client->command(cmd.c_str(), cmd.size());
+std::string cmd = "sadd test_set 101 102\r\n";
+int written_len = client->command(cmd.c_str(), cmd.size());
 if (written_len != cmd.size())
 {
-    //send error
-	return;
-}
+	//send error
+	return 1;
+}	
 int ret_code = 0;
-auto result_ptr = _client->get_results(ret_code);
+auto result_ptr = client->get_results(ret_code);
+if (result_ptr)
+{
+	if (result_ptr->value_type() == ParserType::Number)
+	{
+	auto ptr = std::dynamic_pointer_cast<RedisValue>(result_ptr);
+		std::cout << "result : " << ptr->u.int_val_ << std::endl;
+	}
+}	
+else
+{
+	std::cout << "get results error: " << ret_code << std::endl;
+}
+
 ```
 * In the code above, ret_code means whether an unexpected error is happening, such recv timeout or the responese data format is error. ret_code == 0 means no error.
 If result_ptr is not empty and the ret_code is not zero, it also will be and error because of your cmd syntax error, you have to estimate what kind of result has been returned.
