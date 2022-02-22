@@ -19,16 +19,18 @@ int RClient::_read_timeout = 30000;
 RClient::RClient(const std::string& ipstr, int port)
 	:_ipstr(ipstr),
 	_port(port),
-	_bufptr(std::make_shared<RClientBuffer>(1024)),
+	_bufptr(std::make_shared<RClientBuffer>(1024*1024)),
 	_map_parser(std::make_shared<MapParser>()),
 	_array_parser(std::make_shared<ArrayParser>()),
 	_aclient(std::make_shared<AsyncSocketClient>())
 {
-	_strerr.resize(128, '\0');
+	_strerr.resize(256, '\0');
 }
 
 int RClient::connect(const std::string& username, const std::string& auth, int timeoutms)
 {
+	_user = username;
+	_pass = auth;
 	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
 	if (!flag)
 	{
@@ -52,6 +54,7 @@ int RClient::connect(const std::string& username, const std::string& auth, int t
 
 int RClient::connect(const std::string& auth, int timeoutms)
 {
+	_pass = auth;
 	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
 	if (!flag)
 	{
@@ -89,6 +92,20 @@ int RClient::connect(int timeoutms)
 		return TCP_CONNECTED_FAILED;
 	}*/
 	return _sock_param();
+}
+
+int RClient::reconnect(int timeoutms)
+{
+	_aclient = std::make_shared<AsyncSocketClient>();
+	if (_user.size() == 0 && _pass.size() == 0)
+	{
+		return connect(timeoutms);
+	}
+	if (_pass.size() > 0 && _user.size() > 0)
+	{
+		return connect(_user, _pass, timeoutms);
+	}
+	return connect(_pass, timeoutms);
 }
 
 int RClient::_sock_param()
@@ -164,6 +181,11 @@ int RClient::get_error(std::string& errstr)
 std::string RClient::strerror()
 {
 	return _strerr;
+}
+
+void RClient::set_error_str(const std::string& str)
+{
+	_strerr = str;
 }
 
 void RClient::set_read_timeout(int millisec)
@@ -401,6 +423,16 @@ READ_DATA:
 	{
 		_bufptr->has_read(1);
 		result = std::make_shared<RedisComplexValue>(ParserType::Set);
+		ret = _array_parser->parse(_bufptr, result);
+		if (ret != 0)
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '>')
+	{
+		_bufptr->has_read(1);
+		result = std::make_shared<RedisComplexValue>(ParserType::Push);
 		ret = _array_parser->parse(_bufptr, result);
 		if (ret != 0)
 		{

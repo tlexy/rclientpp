@@ -16,7 +16,7 @@ namespace rcpp {
 	{
 	public:
 		AsyncSocketClient();
-		AsyncSocketClient(int sockfd);
+		//AsyncSocketClient(int sockfd);
 
 		int sockfd() const;
 
@@ -29,6 +29,8 @@ namespace rcpp {
 		int write(const char* buf, int len);
 
 		void close();
+
+		~AsyncSocketClient();
 
 	private:
 		int _sockfd{ -1 };

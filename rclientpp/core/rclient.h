@@ -20,6 +20,8 @@ public:
 	int connect(const std::string& auth, int timeoutms = 10000);
 	int connect(int timeoutms = 10000);
 
+	int reconnect(int timeoutms = 500);
+
 	int use_resp3();
 	int use_resp2();
 
@@ -38,6 +40,8 @@ public:
 
 	std::string strerror();
 
+	void set_error_str(const std::string&);
+
 private:
 	int do_connect(const std::string& cmd);
 
@@ -51,6 +55,9 @@ private:
 
 	std::string _ipstr;
 	int _port;
+	std::string _user;
+	std::string _pass;
+
 	int _err_code;
 	static int _read_timeout;
 	std::string _strerr;

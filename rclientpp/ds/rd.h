@@ -23,6 +23,9 @@ public:
 	bool get_boolean(const std::string& cmd);
 	//int get_integer(const std::string& cmd);
 
+	void set_err_str(const std::string&);
+	std::string get_err_str();
+
 protected:
 	std::shared_ptr<RClient> _client;
 	std::string _crlf;
