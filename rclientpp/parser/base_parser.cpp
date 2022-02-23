@@ -549,6 +549,35 @@ int BaseParser::parse_array(std::shared_ptr<RClientBuffer> bufptr, int amounts, 
 
 		}
 		break;
+		case '>':
+		{
+			auto new_push = std::make_shared<RedisComplexValue>(ParserType::Push);
+			bufptr->has_read(1);
+			int new_len = get_aggregate_len(bufptr);
+			if (new_len < 0)
+			{
+				return new_len;
+			}
+			else if (new_len > 0)
+			{
+				ret = parse_array(bufptr, new_len, new_push);
+				if (ret == 0)
+				{
+					result->results.push_back(new_push);
+					++result->count;
+				}
+				else
+				{
+					return ret;
+				}
+			}
+			else
+			{
+				result->results.push_back(new_push);
+				++result->count;
+			}
+		}
+		break;
 		default:
 			return PARSE_FORMAT_ERROR;
 			;

@@ -38,6 +38,10 @@ public:
 
 	std::shared_ptr<BaseValue> get_results(int& ret_code);
 
+	std::shared_ptr<BaseValue> do_parse(int& ret_code);
+	//返回了多个结果，而没有处理完成？
+	int has_more_data() const;
+
 	std::string strerror();
 
 	void set_error_str(const std::string&);
