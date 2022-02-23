@@ -33,8 +33,8 @@ public:
 
 	size_t size();
 
-	size_t get_step();
-	void set_step(size_t);
+	//size_t get_step();
+	//void set_step(size_t);
 
 	size_t usable_size();
 	size_t writable_size();
@@ -42,14 +42,13 @@ public:
 
 	~RClientBuffer();
 
-private:
 	void rearrange();
 
 private:
 	char* _buffer{NULL};
 	size_t _read_pos{0};
 	size_t _write_pos{0};
-	size_t _step_pos{ 0 };
+	//size_t _step_pos{ 0 };
 	size_t _size{0};
 };
 

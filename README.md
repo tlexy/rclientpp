@@ -176,4 +176,18 @@ std::cout << "flag:" << flag << std::endl;
 
 ```
 
+### Attentions
+For some redis commands, such as:
+```
+SUBSCRIBE chat_msg chat_msg2\r\n
+```
+Here is responses:
+```
+*3\r\n$9\r\nsubscribe\r\n$8\r\nchat_msg\r\n:1\r\n*3\r\n$9\r\nsubscribe\r\n$9\r\nchat_msg2\r\n:2\r\n
+```
+The results is two array, but they don't have any relations with each other(or saying that they are Balanced relationship). In this situation, get_results() only return the first array. You have to handle the rest of data. see the subscriber.cpp file to know details.
+```
+Subscriber::subscribe(std::initializer_list<std::string> channels)
+```
+
 

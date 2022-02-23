@@ -60,9 +60,17 @@ size_t RClientBuffer::writable_size()
 
 void RClientBuffer::rearrange()
 {
-	std::copy(_buffer + _read_pos, _buffer + _write_pos, _buffer);
-	_write_pos = _write_pos - _read_pos;
-	_read_pos = 0;
+	if (readable_size() > 0)
+	{
+		std::copy(_buffer + _read_pos, _buffer + _write_pos, _buffer);
+		_write_pos = _write_pos - _read_pos;
+		_read_pos = 0;
+	}
+	else
+	{
+		_read_pos = 0;
+		_write_pos = 0;
+	}
 }
 
 void RClientBuffer::has_written(size_t size)
@@ -100,23 +108,23 @@ void RClientBuffer::has_read(size_t size)
 		_read_pos += size;
 	}
 }
-
-size_t RClientBuffer::get_step()
-{
-	return _step_pos;
-}
-
-void RClientBuffer::set_step(size_t pos)
-{
-	_step_pos = pos;
-}
+//
+//size_t RClientBuffer::get_step()
+//{
+//	return _step_pos;
+//}
+//
+//void RClientBuffer::set_step(size_t pos)
+//{
+//	_step_pos = pos;
+//}
 
 void RClientBuffer::reset()
 {
-	memset(_buffer, 0x0, _size);
+	//memset(_buffer, 0x0, _size);
 	_read_pos = 0;
 	_write_pos = 0;
-	_step_pos = 0;
+	//_step_pos = 0;
 }
 
 size_t RClientBuffer::size()

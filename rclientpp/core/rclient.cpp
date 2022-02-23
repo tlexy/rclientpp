@@ -258,24 +258,19 @@ void RClient::_get_error(std::shared_ptr<BaseValue> ptr)
 	}
 }
 
-std::shared_ptr<BaseValue> RClient::get_results(int& ret_code)
+int RClient::has_more_data() const
 {
-	ret_code = PARSE_FORMAT_ERROR;
-	_bufptr->reset();
-READ_DATA:
-	//int len = sockets::Read(_sockfd, (void*)_bufptr->write_ptr(), _bufptr->writable_size());
-	int len = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size(), _read_timeout);
-	if (len == 0)
+	return _bufptr->readable_size();
+}
+
+std::shared_ptr<BaseValue> RClient::do_parse(int& ret_code)
+{
+	ret_code = 0;
+	if (_bufptr->readable_size() < 1)
 	{
-		ret_code = TCP_CONNECTION_ERROR;
 		return nullptr;
 	}
-	else if (len == -1)
-	{
-		ret_code = TCP_TIMEOUT;
-		return nullptr;
-	}
-	_bufptr->has_written(len);
+	//parse data 
 	char* text = _bufptr->read_ptr();
 	size_t old_pos = _bufptr->get_read_off();
 	std::shared_ptr<BaseValue> result = nullptr;
@@ -439,9 +434,224 @@ READ_DATA:
 		_bufptr->has_read(1);
 		result = std::make_shared<RedisComplexValue>(ParserType::Push);
 		ret = _array_parser->parse(_bufptr, result);
+		text = _bufptr->read_ptr();
+		if (ret != 0)
+		{
+			int a = 1;
+		}
+	}
+	else
+	{
+	ret_code = RESP_FORMAT_UNKNOWN;
+		return nullptr;
+	}
+	//error
+	_err_code = ret;
+	ret_code = ret;
+	if (ret == NEED_MORE_DATA)
+	{
+		_bufptr->set_read_off(old_pos);
+	}
+	return result;
+}
+
+std::shared_ptr<BaseValue> RClient::get_results(int& ret_code)
+{
+	ret_code = PARSE_FORMAT_ERROR;
+	//_bufptr->reset();
+	_bufptr->rearrange();
+READ_DATA:
+	//int len = sockets::Read(_sockfd, (void*)_bufptr->write_ptr(), _bufptr->writable_size());
+	int len = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size(), _read_timeout);
+	if (len == 0)
+	{
+		ret_code = TCP_CONNECTION_ERROR;
+		return nullptr;
+	}
+	else if (len == -1)
+	{
+		ret_code = TCP_TIMEOUT;
+		return nullptr;
+	}
+	_bufptr->has_written(len);
+	auto result = do_parse(ret_code);
+	if (ret_code == NEED_MORE_DATA)
+	{
+		_bufptr->resize(_bufptr->size() * 2);
+		goto READ_DATA;
+	}
+	else
+	{
+		return result;
+	}
+	/*
+	char* text = _bufptr->read_ptr();
+	size_t old_pos = _bufptr->get_read_off();
+	std::shared_ptr<BaseValue> result = nullptr;
+	int ret = 0;
+	std::string outstr;
+	if (text[0] == '$')
+	{
+		ret = _array_parser->process_blob_string(_bufptr, outstr);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(outstr, ParserType::BlobString);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '+')
+	{
+		ret = _array_parser->process_simple_string(_bufptr, outstr);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(outstr, ParserType::SimpleString);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '-')
+	{
+		ret = _array_parser->process_simple_error(_bufptr, outstr);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(outstr, ParserType::SimpleError);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == ':')
+	{
+		int64_t num;
+		ret = _array_parser->process_number(_bufptr, num);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(num);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '_')
+	{
+		ret = _array_parser->process_nil(_bufptr);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(ParserType::NilValue);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == ',')
+	{
+		long double dl = 0;
+		ret = _array_parser->process_double(_bufptr, dl);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(dl);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '#')
+	{
+		bool flag = false;
+		ret = _array_parser->process_bool(_bufptr, flag);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(flag);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '!')
+	{
+		ret = _array_parser->process_blob_error(_bufptr, outstr);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(outstr, ParserType::BlobError);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '=')
+	{
+		ret = _array_parser->process_verbatim_string(_bufptr, outstr);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(outstr, ParserType::Verbatim);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '(')
+	{
+		ret = _array_parser->process_big_number(_bufptr, outstr);
+		if (ret == 0)
+		{
+			result = std::make_shared<RedisValue>(outstr, ParserType::BigNumber);
+		}
+		else
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '*')
+	{
+		_bufptr->has_read(1);
+		result = std::make_shared<RedisComplexValue>(ParserType::Array);
+		ret = _array_parser->parse(_bufptr, result);
+		if (ret != 0)
+		{
+			ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '%')
+	{
+		_bufptr->has_read(1);
+		result = std::make_shared<RedisComplexValue>(ParserType::Map);
+		ret = _map_parser->parse(_bufptr, result);
 		if (ret != 0)
 		{
 			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '~')
+	{
+		_bufptr->has_read(1);
+		result = std::make_shared<RedisComplexValue>(ParserType::Set);
+		ret = _array_parser->parse(_bufptr, result);
+		if (ret != 0)
+		{
+			//ret_code = PARSE_FORMAT_ERROR;
+		}
+	}
+	else if (text[0] == '>')
+	{
+		_bufptr->has_read(1);
+		result = std::make_shared<RedisComplexValue>(ParserType::Push);
+		ret = _array_parser->parse(_bufptr, result);
+		text = _bufptr->read_ptr();
+		if (ret != 0)
+		{
+			int a = 1;
 		}
 	}
 	else
@@ -465,6 +675,7 @@ READ_DATA:
 		ret_code = 0;
 	}
 	return result;
+	*/
 }
 
 int RClient::use_resp2()
