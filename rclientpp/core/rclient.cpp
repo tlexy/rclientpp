@@ -14,8 +14,6 @@ const static std::string strSockParamError = "set tcp socket parameters failed";
 const static std::string strAuthError = "AUTH failed";
 const static std::string strTcpSendError = "tcp send failed";
 
-int RClient::_read_timeout = 30000;
-
 RClient::RClient(const std::string& ipstr, int port)
 	:_ipstr(ipstr),
 	_port(port),

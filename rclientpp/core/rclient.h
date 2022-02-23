@@ -27,7 +27,7 @@ public:
 
 	void close();
 
-	static void set_read_timeout(int millisec);
+	void set_read_timeout(int millisec);
 
 	//将命令发送出去
 	int command(const char* cmd, int len);
@@ -63,7 +63,7 @@ private:
 	std::string _pass;
 
 	int _err_code;
-	static int _read_timeout;
+	int _read_timeout{30000};
 	std::string _strerr;
 	std::shared_ptr<RClientBuffer> _bufptr;
 	std::shared_ptr<MapParser> _map_parser;
