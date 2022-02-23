@@ -58,6 +58,12 @@
     <ClCompile Include="rclientpp\core\sock_utils.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="rclientpp\ds\subscriber.cpp">
+      <Filter>ds</Filter>
+    </ClCompile>
+    <ClCompile Include="rclientpp\ds\publisher.cpp">
+      <Filter>ds</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rclientpp\parser\array_parser.h">
@@ -104,6 +110,12 @@
     </ClInclude>
     <ClInclude Include="rclientpp\core\sock_utils.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="rclientpp\ds\subscriber.h">
+      <Filter>ds</Filter>
+    </ClInclude>
+    <ClInclude Include="rclientpp\ds\publisher.h">
+      <Filter>ds</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
