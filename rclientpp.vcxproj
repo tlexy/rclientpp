@@ -26,11 +26,13 @@
     <ClCompile Include="rclientpp\core\rclient_utils.cpp" />
     <ClCompile Include="rclientpp\core\rdef_impl.cpp" />
     <ClCompile Include="rclientpp\core\sock_utils.cpp" />
+    <ClCompile Include="rclientpp\ds\publisher.cpp" />
     <ClCompile Include="rclientpp\ds\rd.cpp" />
     <ClCompile Include="rclientpp\ds\rdhash.cpp" />
     <ClCompile Include="rclientpp\ds\rdset.cpp" />
     <ClCompile Include="rclientpp\ds\rdstring.cpp" />
     <ClCompile Include="rclientpp\ds\sentinel.cpp" />
+    <ClCompile Include="rclientpp\ds\subscriber.cpp" />
     <ClCompile Include="rclientpp\parser\array_parser.cpp" />
     <ClCompile Include="rclientpp\parser\base_parser.cpp" />
     <ClCompile Include="rclientpp\parser\map_parser.cpp" />
@@ -43,11 +45,13 @@
     <ClInclude Include="rclientpp\core\rclient_def.h" />
     <ClInclude Include="rclientpp\core\rclient_utils.h" />
     <ClInclude Include="rclientpp\core\sock_utils.h" />
+    <ClInclude Include="rclientpp\ds\publisher.h" />
     <ClInclude Include="rclientpp\ds\rd.h" />
     <ClInclude Include="rclientpp\ds\rdhash.h" />
     <ClInclude Include="rclientpp\ds\rdset.h" />
     <ClInclude Include="rclientpp\ds\rdstring.h" />
     <ClInclude Include="rclientpp\ds\sentinel.h" />
+    <ClInclude Include="rclientpp\ds\subscriber.h" />
     <ClInclude Include="rclientpp\parser\array_parser.h" />
     <ClInclude Include="rclientpp\parser\base_parser.h" />
     <ClInclude Include="rclientpp\parser\map_parser.h" />
