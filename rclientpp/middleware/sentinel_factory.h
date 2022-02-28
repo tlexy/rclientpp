@@ -4,6 +4,7 @@
 #include "../ds/sentinel.h"
 #include <thread>
 #include <queue>
+#include <atomic>
 
 NS_1
 
