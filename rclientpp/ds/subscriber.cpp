@@ -1,10 +1,11 @@
 ﻿#include "subscriber.h"
-#include "../core/rclient.h"
 
 NS_1
 
 Subscriber::Subscriber(std::shared_ptr<RClient> connection)
-	:Rd(connection)
+	:Rd(connection),
+	_func(SubsHandleFunc()),
+	_funcp(SubsHandleFuncP())
 {}
 
 int Subscriber::subscribe(std::initializer_list<std::string> channels)
@@ -20,6 +21,11 @@ int Subscriber::subscribe(std::initializer_list<std::string> channels)
 		cmd = cmd + " " + (*it);
 	}
 	cmd += _crlf;
+	return handle_subscribe_res(cmd);
+}
+
+int Subscriber::handle_subscribe_res(const std::string& cmd)
+{
 	int ret_code = 0;
 	int count = 0;
 	auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
@@ -39,7 +45,7 @@ int Subscriber::subscribe(std::initializer_list<std::string> channels)
 			auto pptr = std::dynamic_pointer_cast<RedisComplexValue>(ptr);
 			if (pptr->results.size() == 3)
 			{
-				auto it = pptr->results.begin(); 
+				auto it = pptr->results.begin();
 				++it;
 				++it;
 				if ((*it)->is_number())
@@ -52,10 +58,50 @@ int Subscriber::subscribe(std::initializer_list<std::string> channels)
 	return count;
 }
 
-int Subscriber::recv_msg(SubsHandleFunc func)
+int Subscriber::p_subscribe(std::initializer_list<std::string> channels)
+{
+	if (channels.size() == 0)
+	{
+		return 0;
+	}
+	std::string cmd = "PSUBSCRIBE";
+	auto it = channels.begin();
+	for (; it != channels.end(); ++it)
+	{
+		if ((*it).find('*') != (*it).size() - 1)
+		{
+			printf("pattern format is wrong: %s\n", (*it).c_str());
+			return -1;
+		}
+		cmd = cmd + " " + (*it);
+	}
+	cmd += _crlf;
+	return handle_subscribe_res(cmd);
+}
+
+void Subscriber::regist_p_handle(SubsHandleFuncP func)
+{
+	_funcp = func;
+}
+
+void Subscriber::regist_handle(SubsHandleFunc func)
 {
 	_func = func;
+}
 
+int Subscriber::recv_msg()
+{
+	return do_recv_msg(false);
+}
+
+int Subscriber::recv_p_msg()
+{
+	return do_recv_msg(true);
+}
+
+int Subscriber::do_recv_msg(bool pattern_mode)
+{
+	auto pattern = std::make_shared<std::string>();
 	auto channel = std::make_shared<std::string>();
 	auto message = std::make_shared<std::string>();
 	_is_stop = false;
@@ -69,14 +115,25 @@ int Subscriber::recv_msg(SubsHandleFunc func)
 		auto ptr = _client->get_results(ret_code);
 		while (ptr)
 		{
-			count = handle_publish(ptr, channel, message);
+			if (pattern_mode)
+			{
+				count = handle_p_publish(ptr, pattern, channel, message);
+			}
+			else
+			{
+				count = handle_publish(ptr, channel, message);
+			}
 			if (count == 0)
 			{
 				break;
 			}
 			else
 			{
-				if (_func)
+				if (pattern_mode && _funcp)
+				{
+					_funcp(pattern, channel, message);
+				}
+				else if (!pattern_mode && _func)
 				{
 					_func(channel, message);
 				}
@@ -96,11 +153,15 @@ int Subscriber::recv_msg(SubsHandleFunc func)
 		if (ret_code != 0 && ret_code != TCP_TIMEOUT)
 		{
 			printf("subscriber recv msg error: %d\n", ret_code);
-			break;
+			return ret_code;
 		}
 	}
 	return 0;
 }
+
+
+//int Subscriber::recv_msg(SubsHandleFunc func)
+//{}
 
 int Subscriber::handle_publish(std::shared_ptr<BaseValue>ptr, std::shared_ptr<std::string> channel, std::shared_ptr<std::string> message)
 {
@@ -117,6 +178,30 @@ int Subscriber::handle_publish(std::shared_ptr<BaseValue>ptr, std::shared_ptr<st
 	}
 	auto it = pptr->results.begin();
 	//std::string stype = (*it)->get_string();
+	++it;
+	*channel = (*it)->get_string();
+	++it;
+	*message = (*it)->get_string();
+	return 1;
+}
+
+int Subscriber::handle_p_publish(std::shared_ptr<BaseValue> ptr, std::shared_ptr<std::string> pattern, std::shared_ptr<std::string> channel, std::shared_ptr<std::string> message)
+{
+	if (ptr->value_type() != ParserType::Array && ptr->value_type() != ParserType::Push)
+	{
+		printf("psubscriber get wrong type: %d\n", ptr->value_type());
+		return 0;
+	}
+	auto pptr = std::dynamic_pointer_cast<RedisComplexValue>(ptr);
+	if (pptr->results.size() != 4)
+	{
+		printf("psubscriber results count wrong type: %d\n", pptr->results.size());
+		return 0;
+	}
+	auto it = pptr->results.begin();
+	//std::string stype = (*it)->get_string();
+	++it;
+	*pattern = (*it)->get_string();
 	++it;
 	*channel = (*it)->get_string();
 	++it;

@@ -33,6 +33,7 @@
     <ClCompile Include="rclientpp\ds\rdstring.cpp" />
     <ClCompile Include="rclientpp\ds\sentinel.cpp" />
     <ClCompile Include="rclientpp\ds\subscriber.cpp" />
+    <ClCompile Include="rclientpp\middleware\sentinel_factory.cpp" />
     <ClCompile Include="rclientpp\parser\array_parser.cpp" />
     <ClCompile Include="rclientpp\parser\base_parser.cpp" />
     <ClCompile Include="rclientpp\parser\map_parser.cpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="rclientpp\ds\rdstring.h" />
     <ClInclude Include="rclientpp\ds\sentinel.h" />
     <ClInclude Include="rclientpp\ds\subscriber.h" />
+    <ClInclude Include="rclientpp\middleware\sentinel_factory.h" />
     <ClInclude Include="rclientpp\parser\array_parser.h" />
     <ClInclude Include="rclientpp\parser\base_parser.h" />
     <ClInclude Include="rclientpp\parser\map_parser.h" />

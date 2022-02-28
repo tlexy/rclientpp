@@ -7,9 +7,9 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../)
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11   -O2")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11  -O2")
 
-FILE (GLOB RCLIENTPP_HEADERS "./core/*.h" "./ds/*.h" "./parser/*.h")
+FILE (GLOB RCLIENTPP_HEADERS "./core/*.h" "./ds/*.h" "./parser/*.h" "./middleware/*.h")
 
-FILE (GLOB RCLIENTPP_SRCS "./core/*.cpp" "./ds/*.cpp" "./parser/*.cpp" )
+FILE (GLOB RCLIENTPP_SRCS "./core/*.cpp" "./ds/*.cpp" "./parser/*.cpp" "./middleware/*.cpp")
 
 
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "../../libs")

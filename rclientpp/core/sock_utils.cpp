@@ -48,7 +48,7 @@ namespace sockets
 		int ret = 0;
 		if ((ret = connect(fd, sa, salen)) < 0)
 		{
-			err_exit("connect error");
+			//err_exit("connect error");
 			return ret;
 		}
 		return 0;

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <algorithm>
 #include "async_socket_client.h"
+#include "rclient_utils.h"
 
 NS_1
 
@@ -20,7 +21,8 @@ RClient::RClient(const std::string& ipstr, int port)
 	_bufptr(std::make_shared<RClientBuffer>(1024*1024)),
 	_map_parser(std::make_shared<MapParser>()),
 	_array_parser(std::make_shared<ArrayParser>()),
-	_aclient(std::make_shared<AsyncSocketClient>())
+	_aclient(std::make_shared<AsyncSocketClient>()),
+	_is_connect(false)
 {
 	_strerr.resize(256, '\0');
 }
@@ -29,18 +31,20 @@ int RClient::connect(const std::string& username, const std::string& auth, int t
 {
 	_user = username;
 	_pass = auth;
-	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
+	/*bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
 	if (!flag)
 	{
 		return -1;
 	}
-	_sockfd = _aclient->sockfd();
-	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
-	if (_sockfd <= 0)
-	{
-		return TCP_CONNECTED_FAILED;
-	}*/
-	int ret = _sock_param();
+	_is_connect = true;
+	_sockfd = _aclient->sockfd();*/
+		/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
+		if (_sockfd <= 0)
+		{
+			return TCP_CONNECTED_FAILED;
+		}*/
+	//int ret = _sock_param();
+	int ret = connect(timeoutms);
 	if (ret != 0)
 	{
 		return ret;
@@ -53,19 +57,25 @@ int RClient::connect(const std::string& username, const std::string& auth, int t
 int RClient::connect(const std::string& auth, int timeoutms)
 {
 	_pass = auth;
-	bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
+	/*bool flag = _aclient->connect(_ipstr.c_str(), _port, timeoutms);
 	if (!flag)
 	{
 		_strerr = strConnectError;
 		return -1;
 	}
-	_sockfd = _aclient->sockfd();
-	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
-	if (_sockfd <= 0)
+	_is_connect = true;
+	_sockfd = _aclient->sockfd();*/
+			/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
+			if (_sockfd <= 0)
+			{
+				return TCP_CONNECTED_FAILED;
+			}*/
+	//int ret = _sock_param();
+	int ret = connect(timeoutms);
+	if (auth.size() == 0)
 	{
-		return TCP_CONNECTED_FAILED;
-	}*/
-	int ret = _sock_param();
+		return ret;
+	}
 	if (ret != 0)
 	{
 		return ret;
@@ -83,6 +93,7 @@ int RClient::connect(int timeoutms)
 		_strerr = strConnectError;
 		return -1;
 	}
+	_is_connect = true;
 	_sockfd = _aclient->sockfd();
 	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
 	if (_sockfd <= 0)
@@ -90,6 +101,28 @@ int RClient::connect(int timeoutms)
 		return TCP_CONNECTED_FAILED;
 	}*/
 	return _sock_param();
+}
+
+int RClient::check_connection()
+{
+	if (!_is_connect)
+	{
+		return TCP_CONNECTION_ERROR;
+	}
+	int old_timeout = _read_timeout;
+	_read_timeout = 1000;
+	int ret = command("PING\r\n", 6);
+	if (ret == 6)
+	{
+		auto ptr = get_results(ret);
+		_read_timeout = old_timeout;
+		if (ret == 0 && ptr)
+		{
+			return 0;
+		}
+		return -1;
+	}
+	return -1;
 }
 
 int RClient::reconnect(int timeoutms)
@@ -193,6 +226,10 @@ void RClient::set_read_timeout(int millisec)
 
 int RClient::command(const char* cmd, int len)
 {
+	if (!_is_connect)
+	{
+		return TCP_CONNECTION_ERROR;
+	}
 	if (len < 3)
 	{
 		_err_code = SYNTAX_ERROR;
@@ -218,6 +255,49 @@ int RClient::recv(void* buf, int len)
 {
 	//return sockets::Read(_sockfd, buf, len);
 	return _aclient->read((char*)buf, len, _read_timeout);
+}
+
+RedisRoleType RClient::get_role()
+{
+	std::string cmd("INFO REPLICATION\r\n");
+	int ret = command(cmd.c_str(), cmd.size());
+	if (ret == cmd.size())
+	{
+		auto ptr = get_results(ret);
+		if (ret != 0 || ptr == nullptr)
+		{
+			return RedisRoleType::Unknown;
+		}
+		if (ptr->value_type() != ParserType::Verbatim && ptr->value_type() != ParserType::BlobString)
+		{
+			return RedisRoleType::Unknown;
+		}
+		std::string str = ptr->get_string();
+		if (str.find("# Replication") == std::string::npos)
+		{
+			return RedisRoleType::Unknown;
+		}
+		std::vector<std::string> vecs;
+		rcpp::split(str, "\r\n", vecs);
+		if (vecs.size() > 0)
+		{
+			for (int i = 0; i < vecs.size(); ++i)
+			{
+				if (vecs[i].find("role:") != std::string::npos)
+				{
+					if (vecs[i].find("master") != std::string::npos)
+					{
+						return RedisRoleType::Master;
+					}
+					else if (vecs[i].find("slave") != std::string::npos)
+					{
+						return RedisRoleType::Slave;
+					}
+				}
+			}
+		}
+	}
+	return RedisRoleType::Unknown;
 }
 
 int RClient::use_resp3()
@@ -456,8 +536,8 @@ std::shared_ptr<BaseValue> RClient::do_parse(int& ret_code)
 std::shared_ptr<BaseValue> RClient::get_results(int& ret_code)
 {
 	ret_code = PARSE_FORMAT_ERROR;
-	//_bufptr->reset();
-	_bufptr->rearrange();
+	_bufptr->reset();
+	//_bufptr->rearrange();
 READ_DATA:
 	//int len = sockets::Read(_sockfd, (void*)_bufptr->write_ptr(), _bufptr->writable_size());
 	int len = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size(), _read_timeout);
@@ -682,10 +762,20 @@ int RClient::use_resp2()
 	return 0;
 }
 
+bool RClient::is_connected()
+{
+	if (_sockfd > 0 && _is_connect)
+	{
+		return true;
+	}
+	return false;
+}
+
 void RClient::close()
 {
 	if (_sockfd > 0)
 	{
+		_is_connect = false;
 		sockets::Close(_sockfd);
 		_sockfd = -1;
 	}

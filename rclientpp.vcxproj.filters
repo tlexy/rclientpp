@@ -11,6 +11,9 @@
     <Filter Include="ds">
       <UniqueIdentifier>{76df325e-b0b7-4b8b-8780-4cc012a6c6e4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="middleware">
+      <UniqueIdentifier>{a933498a-5d31-4bb8-9f15-08b6ca25da07}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rclientpp\parser\array_parser.cpp">
@@ -64,6 +67,9 @@
     <ClCompile Include="rclientpp\ds\publisher.cpp">
       <Filter>ds</Filter>
     </ClCompile>
+    <ClCompile Include="rclientpp\middleware\sentinel_factory.cpp">
+      <Filter>middleware</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rclientpp\parser\array_parser.h">
@@ -116,6 +122,9 @@
     </ClInclude>
     <ClInclude Include="rclientpp\ds\publisher.h">
       <Filter>ds</Filter>
+    </ClInclude>
+    <ClInclude Include="rclientpp\middleware\sentinel_factory.h">
+      <Filter>middleware</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

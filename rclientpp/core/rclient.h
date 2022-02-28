@@ -3,6 +3,7 @@
 
 #include "rclient_def.h"
 #include <string>
+#include <atomic>
 
 #include "../parser/map_parser.h"
 #include "../parser/array_parser.h"
@@ -22,8 +23,13 @@ public:
 
 	int reconnect(int timeoutms = 500);
 
+	int check_connection();
+	bool is_connected();
+
 	int use_resp3();
 	int use_resp2();
+
+	RedisRoleType get_role();
 
 	void close();
 
@@ -61,6 +67,8 @@ private:
 	int _port;
 	std::string _user;
 	std::string _pass;
+
+	std::atomic<bool> _is_connect;
 
 	int _err_code;
 	int _read_timeout{30000};
