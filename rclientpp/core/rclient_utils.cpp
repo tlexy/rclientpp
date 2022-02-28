@@ -45,4 +45,23 @@ namespace rcpp {
 		}
 		return true;
 	}
+	
+	void split(const std::string& text, const std::string& splitter, std::vector<std::string>& vecs)
+	{
+		size_t offset = 0;
+		size_t pos = text.find(splitter);
+		while (pos != std::string::npos)
+		{
+			if (pos - offset > 0)
+			{
+				vecs.push_back(text.substr(offset, pos - offset));
+			}
+			offset = pos + splitter.size();
+			pos = text.find(splitter, offset);
+		}
+		if (offset < text.size())
+		{
+			vecs.push_back(text.substr(offset));
+		}
+	}
 }

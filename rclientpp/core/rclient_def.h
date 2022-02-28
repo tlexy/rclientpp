@@ -138,6 +138,29 @@ enum class ParserType
 
 };
 
+enum class RedisRoleType
+{
+	Master,
+	Slave,
+	Sentinel,
+	Unknown,
+};
+
+enum class SentinelEventType
+{
+	SsDown,
+	PsDown,
+	SoDown,
+	PoDown,
+	FailoverEnd,
+	SwitchMaster,
+	PSlave,
+	SentinelSubscribeReturn, //订阅返回了，可能是出错
+	ConnectNewMasterFailed,
+	ConnectNewMasterSucceed,
+	MasterObjDown,
+};
+
 class BaseValue
 {
 public:

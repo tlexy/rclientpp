@@ -248,7 +248,7 @@ int BaseParser::process_bool(std::shared_ptr<RClientBuffer> bufptr, bool& flag)
 int BaseParser::process_verbatim_string(std::shared_ptr<RClientBuffer> bufptr, /*std::string& type,*/ std::string& outstr)
 {
 	char* text = bufptr->read_ptr();
-	if (text[0] != '#')
+	if (text[0] != '=')
 	{
 		return PARSE_FORMAT_ERROR;
 	}
@@ -272,7 +272,7 @@ int BaseParser::process_verbatim_string(std::shared_ptr<RClientBuffer> bufptr, /
 	/*type = std::string(text, 3);
 	bufptr->has_read(4);*/
 
-	int ret = get_normal_string(bufptr, outstr);
+	int ret = get_len_string(bufptr, len, outstr);
 	/*if (ret < 0)
 	{
 		bufptr->has_read(-1);

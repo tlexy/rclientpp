@@ -118,7 +118,6 @@ namespace rcpp {
 
 	int AsyncSocketClient::write(const char* buf, int len, int timeoutms)
 	{
-		//int written_len = 0;
 		int written_len = write(buf, len);
 		if (written_len == len)
 		{
@@ -137,7 +136,7 @@ namespace rcpp {
 			if (ret == 0)
 			{
 				_err_code = ret;
-				printf("read, select socket select timeout\n");
+				//printf("read, select socket select timeout\n");
 				return written_len;
 			}
 			if (FD_ISSET(_sockfd, &_wfds))
@@ -167,7 +166,7 @@ namespace rcpp {
 		if (ret == 0)
 		{
 			_err_code = ret;
-			printf("read, select socket select timeout\n");
+			//printf("read, select socket select timeout\n");
 			return -1;
 		}
 		if (FD_ISSET(_sockfd, &_rfds))
