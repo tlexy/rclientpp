@@ -536,8 +536,8 @@ std::shared_ptr<BaseValue> RClient::do_parse(int& ret_code)
 std::shared_ptr<BaseValue> RClient::get_results(int& ret_code)
 {
 	ret_code = PARSE_FORMAT_ERROR;
-	_bufptr->reset();
-	//_bufptr->rearrange();
+	//_bufptr->reset();
+	_bufptr->rearrange();
 READ_DATA:
 	//int len = rcppsockets::Read(_sockfd, (void*)_bufptr->write_ptr(), _bufptr->writable_size());
 	int len = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size(), _read_timeout);
