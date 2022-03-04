@@ -76,6 +76,7 @@ public:
 
 	//异步redis命令
 	int async_command(const std::string&);
+	int async_command(const char* cmd, int len);
 
 	//you should run it with a new thread
 	int start();

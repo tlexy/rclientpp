@@ -27,7 +27,7 @@ namespace rcpp {
 	bool AsyncSocketClient::connect(const char* ip_str, int port, int timeoutms)
 	{
 		struct sockaddr_in serveraddr;
-		int confd = sockets::Socket(AF_INET, SOCK_STREAM, 0);
+		int confd = rcppsockets::Socket(AF_INET, SOCK_STREAM, 0);
 		if (confd < 0)
 		{
 			_err_code = confd;
@@ -41,19 +41,19 @@ namespace rcpp {
 		inet_pton(AF_INET, ip_str, &serveraddr.sin_addr.s_addr);
 		serveraddr.sin_port = htons(port);
 
-		int ret = sockets::SetBlocking(_sockfd, false);
+		int ret = rcppsockets::SetBlocking(_sockfd, false);
 		if (ret < 0)
 		{
 			_err_code = ret;
 			return false;
 		}
-		ret = sockets::setNoDelay(_sockfd);
+		ret = rcppsockets::setNoDelay(_sockfd);
 		if (ret != 0)
 		{
 			_err_code = ret;
 			return false;
 		}
-		ret = sockets::Connect(_sockfd, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+		ret = rcppsockets::Connect(_sockfd, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 		if (ret == 0)
 		{
 			_err_code = ret;
@@ -179,19 +179,19 @@ namespace rcpp {
 
 	int AsyncSocketClient::read(char* buf, int len)
 	{
-		return sockets::Read(_sockfd, buf, len);
+		return rcppsockets::Read(_sockfd, buf, len);
 	}
 
 	int AsyncSocketClient::write(const char* buf, int len)
 	{
-		return sockets::Write(_sockfd, buf, len);
+		return rcppsockets::Write(_sockfd, buf, len);
 	}
 
 	void AsyncSocketClient::close()
 	{
 		if (_sockfd > 0)
 		{
-			sockets::Close(_sockfd);
+			rcppsockets::Close(_sockfd);
 		}
 		_sockfd = -1;
 	}

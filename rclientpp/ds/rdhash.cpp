@@ -38,7 +38,7 @@ std::shared_ptr<RedisValue> RdHash::hget(const std::string& key, const std::stri
 	return std::dynamic_pointer_cast<RedisValue>(ptr);
 }
 
-std::shared_ptr<RedisValue> RdHash::hmget(const std::string& key, std::initializer_list<std::string> fields)
+std::shared_ptr<BaseValue> RdHash::hmget(const std::string& key, const std::initializer_list<std::string>& fields)
 {
 	std::string cmd = "hmget ";
 	cmd = cmd + key;
@@ -50,25 +50,73 @@ std::shared_ptr<RedisValue> RdHash::hmget(const std::string& key, std::initializ
 	cmd += _crlf;
 	int ret_code = 0;
 	auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
-	if (ret_code != 0)
+	return ptr;
+}
+
+std::shared_ptr<RedisComplexValue> RdHash::hgetall(const std::string& key)
+{
+	std::string cmd = "HGETALL ";
+	cmd = cmd + key + _crlf;
+	int ret_code = 0;
+	auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
+	if (ptr && (ptr->value_type() == ParserType::Array || ptr->value_type() == ParserType::Map))
 	{
-		return nullptr;
+		return std::dynamic_pointer_cast<RedisComplexValue>(ptr);
 	}
-	return std::dynamic_pointer_cast<RedisValue>(ptr);
+	return nullptr;
+}
+
+std::shared_ptr<BaseValue> RdHash::hkeys(const std::string& key)
+{
+	std::string cmd = "HKEYS ";
+	cmd = cmd + key + _crlf;
+	int ret_code = 0;
+	return redis_command(cmd.c_str(), cmd.size(), ret_code);
 }
 
 bool RdHash::hexists(const std::string& key, const std::string& field)
 {
+	std::string cmd = "HEXISTS ";
+	cmd = cmd + key + " " + field + _crlf;
+	int ret_code = 0;
+	auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
+	if (ptr)
+	{
+		int ret = ptr->get_number();
+		return ret == 1;
+	}
 	return false;
 }
 
-int RdHash::hdel(const std::string& key, const std::string& field)
+int RdHash::hdel(const std::string& key, const std::initializer_list<std::string>& fields)
 {
+	std::string cmd = "HDEL ";
+	cmd += key;
+	auto it = fields.begin();
+	for (; it != fields.end(); ++it)
+	{
+		cmd = cmd + " " + (*it);
+	}
+	cmd += _crlf;
+	int ret_code = 0;
+	auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
+	if (ptr)
+	{
+		return ptr->get_number();
+	}
 	return 0;
 }
 
-int RdHash::hlen(const std::string& key, const std::string& field)
+int RdHash::hlen(const std::string& key)
 {
+	std::string cmd = "HLEN ";
+	cmd = cmd + key + _crlf;
+	int ret_code = 0;
+	auto ptr = redis_command(cmd.c_str(), cmd.size(), ret_code);
+	if (ptr)
+	{
+		return ptr->get_number();
+	}
 	return 0;
 }
 

@@ -38,7 +38,7 @@ int RClient::connect(const std::string& username, const std::string& auth, int t
 	}
 	_is_connect = true;
 	_sockfd = _aclient->sockfd();*/
-		/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
+		/*_sockfd = rcppsockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
 		if (_sockfd <= 0)
 		{
 			return TCP_CONNECTED_FAILED;
@@ -65,7 +65,7 @@ int RClient::connect(const std::string& auth, int timeoutms)
 	}
 	_is_connect = true;
 	_sockfd = _aclient->sockfd();*/
-			/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
+			/*_sockfd = rcppsockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
 			if (_sockfd <= 0)
 			{
 				return TCP_CONNECTED_FAILED;
@@ -95,7 +95,7 @@ int RClient::connect(int timeoutms)
 	}
 	_is_connect = true;
 	_sockfd = _aclient->sockfd();
-	/*_sockfd = sockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
+	/*_sockfd = rcppsockets::ConnectTcp(_ipstr.c_str(), _port, timeoutms);
 	if (_sockfd <= 0)
 	{
 		return TCP_CONNECTED_FAILED;
@@ -141,18 +141,18 @@ int RClient::reconnect(int timeoutms)
 
 int RClient::_sock_param()
 {
-	/*int ret = sockets::SetRecvTimeout(_sockfd, _read_timeout);
+	/*int ret = rcppsockets::SetRecvTimeout(_sockfd, _read_timeout);
 	if (ret != 0)
 	{
 		return ret;
 	}*/
-	int ret = sockets::KeepAlive(_sockfd);
+	int ret = rcppsockets::KeepAlive(_sockfd);
 	if (ret != 0)
 	{
 		_strerr = strSockParamError;
 		return ret;
 	}
-	ret = sockets::setNoDelay(_sockfd);
+	ret = rcppsockets::setNoDelay(_sockfd);
 	if (ret != 0)
 	{
 		_strerr = strSockParamError;
@@ -182,7 +182,7 @@ int RClient::do_connect(const std::string& cmd)
 			_get_error(ptr);
 			return AUTH_FAILED;
 		}
-		/*int len = sockets::Read(_sockfd, (void*)_strerr.c_str(), _strerr.size());
+		/*int len = rcppsockets::Read(_sockfd, (void*)_strerr.c_str(), _strerr.size());
 		if (len > 0)
 		{
 			if (_strerr[0] == '-')
@@ -243,7 +243,7 @@ int RClient::command(const char* cmd, int len)
 	}
 	if (cmd[len - 2] == '\r' && cmd[len - 1] == '\n')
 	{
-		//_err_code = sockets::Write(_sockfd, cmd, len);;
+		//_err_code = rcppsockets::Write(_sockfd, cmd, len);;
 		_err_code = _aclient->write(cmd, len, _read_timeout);
 		return _err_code;
 	}
@@ -253,7 +253,7 @@ int RClient::command(const char* cmd, int len)
 
 int RClient::recv(void* buf, int len)
 {
-	//return sockets::Read(_sockfd, buf, len);
+	//return rcppsockets::Read(_sockfd, buf, len);
 	return _aclient->read((char*)buf, len, _read_timeout);
 }
 
@@ -539,7 +539,7 @@ std::shared_ptr<BaseValue> RClient::get_results(int& ret_code)
 	_bufptr->reset();
 	//_bufptr->rearrange();
 READ_DATA:
-	//int len = sockets::Read(_sockfd, (void*)_bufptr->write_ptr(), _bufptr->writable_size());
+	//int len = rcppsockets::Read(_sockfd, (void*)_bufptr->write_ptr(), _bufptr->writable_size());
 	int len = _aclient->read(_bufptr->write_ptr(), _bufptr->writable_size(), _read_timeout);
 	if (len == 0)
 	{
@@ -776,7 +776,7 @@ void RClient::close()
 	if (_sockfd > 0)
 	{
 		_is_connect = false;
-		sockets::Close(_sockfd);
+		rcppsockets::Close(_sockfd);
 		_sockfd = -1;
 	}
 }

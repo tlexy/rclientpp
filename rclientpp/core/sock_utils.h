@@ -17,7 +17,7 @@
 	#define DWORD long
 	#endif
 #endif
-namespace sockets
+namespace rcppsockets
 {
 	void Init();
 	void Destroy();
