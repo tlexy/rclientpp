@@ -4,7 +4,7 @@ Supported platform: Windows and Linux
 What is rclientpp?[cn](https://leoxo.blog.csdn.net/article/details/123052886)
 --------------
 
-rclientpp is C++ client for redis. It didn't rely on any other c or c++ redis client.
+rclientpp is a C++ client for redis. It doesn't rely on any other c or c++ redis client or third-party network library.
 
 Specifications
 
@@ -129,7 +129,7 @@ And so for, you have learn all that how to use rclientpp to connect and communic
 Also, you could use the advanced data structure the communicate to the redis server. But only few data structure and few operations are supported now, we welcome you to add more data structures and operations to this module.
 
 ### Use redis advanced structures
-Right now, only few op is supported
+Right now, only a few ops is supported
 
 ```
 std::string ip("81.71.72.73");
