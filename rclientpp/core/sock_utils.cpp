@@ -9,7 +9,7 @@
 #define SOCKET_ERROR -1
 #endif
 
-namespace sockets
+namespace rcppsockets
 {
 
 	//void perr_exit(const char *s)

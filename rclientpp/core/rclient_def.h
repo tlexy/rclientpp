@@ -161,6 +161,23 @@ enum class SentinelEventType
 	MasterObjDown,
 };
 
+struct SentinelOptions
+{
+	std::vector<std::pair<std::string, int>> nodes;
+
+	std::string password; //to do...
+
+	bool keep_alive = true;
+
+	int connect_timeout{ 3000 };
+
+	int socket_timeout{ 10000 };
+
+	int retry_interval{ 1000 };
+
+	std::size_t max_retry = 3; //to do...
+};
+
 class BaseValue
 {
 public:
@@ -345,6 +362,16 @@ public:
 	}
 private:
 	std::unordered_map<std::string, std::string> _maps;
+};
+
+//redis节点
+struct RedisNode
+{
+	RedisRoleType role;
+	std::string name;
+	std::string ip;
+	int port;
+	std::shared_ptr<Attributes> attrs;
 };
 
 std::shared_ptr<Attributes> to_attrs(std::shared_ptr<RedisComplexValue> ptr);

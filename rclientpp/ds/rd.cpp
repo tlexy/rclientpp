@@ -28,6 +28,7 @@ std::shared_ptr<BaseValue> Rd::redis_command(const char* cmd, int len, int& ret_
 	int ret = _client->command(cmd, len);
 	if (ret != len)
 	{
+		ret_code = ret;
 		return nullptr;
 	}
 	auto ptr = _client->get_results(ret_code);

@@ -14,11 +14,13 @@ public:
 
 	int hset(const std::string& key, const std::string& field, const std::string& val);
 	std::shared_ptr<RedisValue> hget(const std::string& key, const std::string& field);
-	std::shared_ptr<RedisValue> hmget(const std::string& key, std::initializer_list<std::string> fields);
+	std::shared_ptr<BaseValue> hmget(const std::string& key, const std::initializer_list<std::string>& fields);
+	std::shared_ptr<RedisComplexValue> hgetall(const std::string& key);
+	std::shared_ptr<BaseValue> hkeys(const std::string& key);
 
 	bool hexists(const std::string& key, const std::string& field);
-	int hdel(const std::string& key, const std::string& field);
-	int hlen(const std::string& key, const std::string& field = "");
+	int hdel(const std::string& key, const std::initializer_list<std::string>& fields);
+	int hlen(const std::string& key);
 
 
 private:

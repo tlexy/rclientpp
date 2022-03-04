@@ -42,6 +42,11 @@ bool SentinelFactory::init(int master_connection_pool_size)
 	{
 		return false;
 	}
+	printf("sentinel count: %d\n", count);
+	if (count != _config.nodes.size())
+	{
+		return false;
+	}
 	
 	auto node = _sentinel->get_master_by_name(_master_name);
 	if (!node)
@@ -84,9 +89,9 @@ int SentinelFactory::async_command(const std::string& rcmd)
 				auto task = std::make_shared<SfTask>();
 				task->type = etRedisCommandNormal;
 				task->cmd = rcmd;
-				_qu_group[turn]->mutex.lock();
-				_qu_group[turn]->queue.push(task);
-				_qu_group[turn]->mutex.unlock();
+				_qu_group[i]->mutex.lock();
+				_qu_group[i]->queue.push(task);
+				_qu_group[i]->mutex.unlock();
 				return 1;
 			}
 		}
@@ -103,6 +108,11 @@ int SentinelFactory::async_command(const std::string& rcmd)
 	}
 	++turn;
 	return 0;
+}
+
+int SentinelFactory::async_command(const char* cmd, int len)
+{
+	return async_command(std::string(cmd, len));
 }
 
 int SentinelFactory::check_and_retry_master()
