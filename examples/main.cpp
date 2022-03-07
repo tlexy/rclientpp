@@ -150,7 +150,7 @@ void test_set()
 
 int main()
 {
-	sockets::Init();
+	rcppsockets::Init();
 
 	/*char buff[64] = { '\0' };
 	std::string ss = "hello aaa";
@@ -228,7 +228,7 @@ int main()
 
 	std::cin.get();
 
-	sockets::Destroy();
+	rcppsockets::Destroy();
 
 	return 0;
 }

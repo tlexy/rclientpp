@@ -17,7 +17,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -W -w")
 set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
-SET(EXTRA_LIBS rclientpp)
+SET(EXTRA_LIBS rclientpp pthread)
 
 aux_source_directory(. SRCS)
 
