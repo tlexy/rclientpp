@@ -19,7 +19,7 @@ Building rclientpp
 --------------
 
 ### Windows
-Just use visual studio to open the rclientpp.sln, and then to compile the projects. visual stdio 2019 community is recommended.
+Just use Visual Studio to open the rclientpp.sln, and then to compile the projects. Visual Studio 2019 community is recommended.
 
 ### Linux
 Use CMake. follow the steps:
