@@ -1,7 +1,7 @@
 Supported platform: Windows and Linux
 --------------
 
-What is rclientpp?[cn](https://leoxo.blog.csdn.net/article/details/123052886)
+What is rclientpp?[中文](https://leoxo.blog.csdn.net/article/details/123052886)
 --------------
 
 rclientpp is a C++ client for redis. It doesn't rely on any other c or c++ redis client or third-party network library.
