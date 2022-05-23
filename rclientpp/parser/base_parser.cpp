@@ -73,6 +73,9 @@ int BaseParser::process_blob_string(std::shared_ptr<RClientBuffer> bufptr, std::
 	}
 	if (text[1] == '-')
 	{
+		//RESP 2 NIL_VALUE
+		outstr = std::string("-");
+		move_item(bufptr, 3);
 		return NIL_VALUE;
 	}
 	bufptr->has_read(1);//symbol '$'
