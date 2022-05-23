@@ -363,7 +363,10 @@ std::shared_ptr<BaseValue> RClient::do_parse(int& ret_code)
 		}
 		else
 		{
-			//ret_code = PARSE_FORMAT_ERROR;
+			if (ret == RCPPError::NIL_VALUE)
+			{
+				result = std::make_shared<RedisValue>(outstr, ParserType::NilValue);
+			}
 		}
 	}
 	else if (text[0] == '+')

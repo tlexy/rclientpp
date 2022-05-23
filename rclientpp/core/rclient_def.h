@@ -118,7 +118,7 @@ enum RCPPError
 	RCPPERROR_END
 };
 
-enum class ParserType
+enum ParserType
 {
 	NilValue,
 	SimpleString,
