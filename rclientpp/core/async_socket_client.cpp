@@ -141,7 +141,17 @@ namespace rcpp {
 			}
 			if (FD_ISSET(_sockfd, &_wfds))
 			{
-				written_len += write(buf + written_len, len - written_len);
+				//written_len += write(buf + written_len, len - written_len);
+				int wlen = write(buf + written_len, len - written_len);
+				if (wlen > 0)
+				{
+					written_len += wlen;
+				}
+				else
+				{
+					_err_code = wlen;
+					return -2;
+				}
 			}
 		}
 		return written_len;
